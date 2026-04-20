@@ -18,11 +18,13 @@ export interface ProductRow {
 export interface IngredientRow {
   id: string;
   name: string;
+  category_id?: string | null;
   unit: string;
   stock_quantity: number | null;
   minimum_stock: number | null;
   average_cost: number | null;
   expiration_date?: string | null;
+  notes?: string | null;
   categories?: { name?: string | null } | null;
 }
 
@@ -187,6 +189,7 @@ export interface EmployeeRow {
   full_name: string;
   role_name: string;
   salary_base?: number | null;
+  commission_percentage?: number | null;
   remuneration_type: string;
   is_active: boolean;
   phone: string | null;

@@ -4,6 +4,7 @@ const modulePermissions: Record<string, RoleSlug[]> = {
   dashboard: ["admin", "gerente", "caixa", "producao", "estoque", "financeiro"],
   produtos: ["admin", "gerente", "estoque"],
   insumos: ["admin", "gerente", "estoque"],
+  fornecedores: ["admin", "gerente", "estoque", "financeiro"],
   receitas: ["admin", "gerente", "estoque", "producao"],
   vendas: ["admin", "gerente", "caixa"],
   caixa: ["admin", "gerente", "caixa", "financeiro"],

@@ -90,6 +90,7 @@ export function EmployeePaymentForm({
           <option value="adiantamento">Adiantamento</option>
           <option value="desconto">Desconto</option>
           <option value="bonus">Bônus</option>
+          <option value="comissao">Comissão</option>
           <option value="pagamento_realizado">Pagamento realizado</option>
         </select>
       </div>

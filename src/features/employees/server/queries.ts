@@ -5,7 +5,7 @@ import type { EmployeePaymentRow, EmployeeRow } from "@/types/entities";
 export async function getEmployeesPageData(includeSalary: boolean) {
   const supabase = await createClient();
   const select = includeSalary
-    ? "id, full_name, role_name, salary_base, remuneration_type, is_active, phone, notes"
+    ? "*"
     : "id, full_name, role_name, remuneration_type, is_active, phone, notes";
 
   const [employees, payments] = await Promise.all([

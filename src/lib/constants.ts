@@ -6,6 +6,7 @@ import {
   GanttChartSquare,
   LayoutDashboard,
   PackageSearch,
+  Settings,
   ShoppingCart,
   Users,
   Wallet,
@@ -30,10 +31,12 @@ export const navigation = [
   { title: "Vendas e pedidos", href: "/vendas", icon: ShoppingCart },
   { title: "Caixa", href: "/caixa", icon: Wallet },
   { title: "Compras", href: "/compras", icon: ShoppingCart },
+  { title: "Fornecedores", href: "/fornecedores", icon: Users },
   { title: "Estoque", href: "/estoque", icon: Factory },
   { title: "Produção", href: "/producao", icon: GanttChartSquare },
-  { title: "Funcionários", href: "/funcionarios", icon: Users },
+{ title: "Funcionários", href: "/funcionarios", icon: Users },
   { title: "Relatórios", href: "/relatorios", icon: BarChart3 },
+  { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
 export const publicRoutes = ["/login"];

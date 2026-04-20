@@ -3,7 +3,7 @@ import { LoginForm } from "@/features/auth/components/login-form";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(244,114,182,0.24),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(251,146,60,0.18),_transparent_25%),linear-gradient(180deg,#fff8f5_0%,#fffdfb_100%)] px-4 py-10">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(244,114,182,0.24),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(251,146,60,0.18),transparent_25%),linear-gradient(180deg,#fff8f5_0%,#fffdfb_100%)] px-4 py-10">
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
         <section className="space-y-6">
           <div className="inline-flex items-center gap-3 rounded-full border border-rose-200 bg-white/80 px-4 py-2 text-sm text-rose-700">

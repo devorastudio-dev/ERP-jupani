@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, formatPhone } from "@/lib/utils";
 import { EmployeeForm } from "@/features/employees/components/employee-form";
+import { EmployeeFormDialog } from "@/features/employees/components/employee-form-dialog";
 import { EmployeePaymentForm } from "@/features/employees/components/employee-payment-form";
 import { getEmployeesPageData } from "@/features/employees/server/queries";
 import { getCurrentProfile } from "@/server/auth/session";
@@ -51,13 +52,19 @@ export default async function EmployeesPage() {
             <CardContent className="space-y-3">
               {employees.length ? (
                 employees.map((employee) => (
-                  <div key={employee.id} className="rounded-2xl border border-rose-100 p-4">
+                  <div key={employee.id} className="rounded-3xl border border-rose-100 bg-white/90 p-4 shadow-sm shadow-rose-100/40">
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <p className="font-medium text-stone-800">{employee.full_name}</p>
                         <p className="text-sm text-stone-500">
                           {employee.role_name} • {formatPhone(employee.phone)}
                         </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <Badge variant="muted">{employee.remuneration_type}</Badge>
+                          {allowSalary && employee.remuneration_type === "comissao" && employee.commission_percentage ? (
+                            <Badge variant="default">{employee.commission_percentage}% sobre líquido</Badge>
+                          ) : null}
+                        </div>
                         {employee.notes ? <p className="mt-2 text-xs text-stone-500">{employee.notes}</p> : null}
                       </div>
                       <div className="text-right">
@@ -67,6 +74,9 @@ export default async function EmployeesPage() {
                         <p className="mt-2 text-sm text-stone-600">
                           {allowSalary ? formatCurrency(Number(employee.salary_base ?? 0)) : "Salário restrito"}
                         </p>
+                        <div className="mt-3 flex justify-end">
+                          <EmployeeFormDialog employee={employee} allowSalary={allowSalary} />
+                        </div>
                       </div>
                     </div>
                   </div>

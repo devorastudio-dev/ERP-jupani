@@ -14,14 +14,14 @@ export function AppSidebar({ profile }: { profile: AuthUserProfile }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-72 shrink-0 border-r border-rose-100 bg-[#fffaf7] px-5 py-6 lg:flex lg:flex-col">
-      <div className="rounded-3xl bg-gradient-to-br from-rose-500 via-rose-400 to-orange-300 p-5 text-white shadow-lg shadow-rose-200">
+    <aside className="hidden w-72 shrink-0 border-r border-white/60 bg-[#fffaf7]/80 px-5 py-6 backdrop-blur lg:flex lg:flex-col">
+      <div className="rounded-[2rem] bg-gradient-to-br from-rose-500 via-rose-400 to-orange-300 p-5 text-white shadow-lg shadow-rose-200/80">
         <p className="text-sm uppercase tracking-[0.3em] text-white/75">Confeitaria</p>
         <h1 className="mt-2 text-2xl font-semibold">{APP_NAME}</h1>
         <p className="mt-2 text-sm text-white/85">Gestão integrada para produção, vendas e financeiro.</p>
       </div>
 
-      <nav className="mt-8 space-y-1">
+      <nav className="mt-8 space-y-1.5">
         {navigation.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
@@ -31,8 +31,10 @@ export function AppSidebar({ profile }: { profile: AuthUserProfile }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
-                active ? "bg-rose-100 text-rose-700" : "text-stone-600 hover:bg-white hover:text-stone-900",
+                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all",
+                active
+                  ? "bg-white text-rose-700 shadow-sm shadow-rose-100"
+                  : "text-stone-600 hover:bg-white/90 hover:text-stone-900",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -42,7 +44,7 @@ export function AppSidebar({ profile }: { profile: AuthUserProfile }) {
         })}
       </nav>
 
-      <div className="mt-auto rounded-3xl border border-rose-100 bg-white p-4">
+      <div className="mt-auto rounded-[2rem] border border-rose-100/80 bg-white/90 p-4 shadow-sm shadow-rose-100/60">
         <p className="text-sm font-semibold text-stone-900">{profile.full_name}</p>
         <p className="mt-1 text-xs text-stone-500">{profile.email}</p>
         <div className="mt-3 flex flex-wrap gap-2">

@@ -54,7 +54,7 @@ export default async function IngredientsPage() {
             <CardTitle>Estoque de insumos</CardTitle>
           </CardHeader>
           <CardContent>
-            <IngredientsTable ingredients={ingredients} />
+            <IngredientsTable ingredients={ingredients} categories={categories} />
           </CardContent>
         </Card>
       </section>

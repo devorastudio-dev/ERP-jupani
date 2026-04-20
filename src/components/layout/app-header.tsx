@@ -8,22 +8,23 @@ import { AppBreadcrumb } from "@/components/layout/app-breadcrumb";
 
 export function AppHeader({ profile }: { profile: AuthUserProfile }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-rose-100 bg-[#fffdfb]/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-white/70 bg-[#fffdfb]/75 backdrop-blur-xl">
       <div className="flex flex-col gap-4 px-4 py-4 md:px-8">
         <div className="flex items-center justify-between gap-4">
           <div>
             <AppBreadcrumb />
             <h2 className="mt-2 text-2xl font-semibold text-stone-900">Visão operacional da confeitaria</h2>
+            <p className="mt-1 text-sm text-stone-500">Pedidos, produção, estoque e financeiro no mesmo fluxo.</p>
           </div>
           <div className="hidden items-center gap-3 md:flex">
             <div className="relative w-72">
               <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-stone-400" />
-              <Input placeholder="Buscar pedidos, produtos ou clientes" className="pl-9" />
+              <Input placeholder="Buscar pedidos, produtos ou clientes" className="border-white bg-white/85 pl-9 shadow-sm shadow-rose-100/40" />
             </div>
-            <button className="rounded-2xl border border-rose-100 bg-white p-3 text-stone-500">
+            <button className="rounded-2xl border border-white bg-white/90 p-3 text-stone-500 shadow-sm shadow-rose-100/40">
               <Bell className="h-4 w-4" />
             </button>
-            <Link href="/configuracoes" className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white px-3 py-2">
+            <Link href="/configuracoes" className="flex items-center gap-3 rounded-2xl border border-white bg-white/90 px-3 py-2 shadow-sm shadow-rose-100/40">
               <Avatar>
                 <AvatarFallback>{profile.full_name}</AvatarFallback>
               </Avatar>

@@ -2,9 +2,17 @@
 
 import { DataTable } from "@/components/shared/data-table";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { IngredientRow } from "@/types/entities";
+import { Badge } from "@/components/ui/badge";
+import { IngredientFormDialog } from "@/features/ingredients/components/ingredient-form-dialog";
+import type { IngredientRow, NamedCategory } from "@/types/entities";
 
-export function IngredientsTable({ ingredients }: { ingredients: IngredientRow[] }) {
+export function IngredientsTable({
+  ingredients,
+  categories,
+}: {
+  ingredients: IngredientRow[];
+  categories: NamedCategory[];
+}) {
   return (
     <DataTable
       data={ingredients}
@@ -12,7 +20,18 @@ export function IngredientsTable({ ingredients }: { ingredients: IngredientRow[]
       columns={[
         { accessorKey: "name", header: "Insumo" },
         { accessorKey: "unit", header: "Unidade" },
-        { accessorKey: "stock_quantity", header: "Estoque atual" },
+        {
+          accessorKey: "stock_quantity",
+          header: "Estoque atual",
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+              <span>{row.original.stock_quantity}</span>
+              {Number(row.original.stock_quantity ?? 0) <= Number(row.original.minimum_stock ?? 0) ? (
+                <Badge variant="warning">Baixo</Badge>
+              ) : null}
+            </div>
+          ),
+        },
         { accessorKey: "minimum_stock", header: "Estoque mínimo" },
         {
           accessorKey: "average_cost",
@@ -29,6 +48,11 @@ export function IngredientsTable({ ingredients }: { ingredients: IngredientRow[]
           header: "Validade",
           cell: ({ row }) =>
             row.original.expiration_date ? formatDate(String(row.original.expiration_date)) : "-",
+        },
+        {
+          id: "actions",
+          header: "Ações",
+          cell: ({ row }) => <IngredientFormDialog ingredient={row.original} categories={categories} />,
         },
       ]}
     />
