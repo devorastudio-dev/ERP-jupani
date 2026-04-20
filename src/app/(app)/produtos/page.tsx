@@ -1,11 +1,9 @@
 import { getProductsPageData } from "@/features/products/server/queries";
 import { ProductCategoriesCard } from "@/features/products/components/product-categories-card";
 import { ProductForm } from "@/features/products/components/product-form";
-import { DataTable } from "@/components/shared/data-table";
+import { ProductsTable } from "@/features/products/components/products-table";
 import { PageHeader } from "@/components/shared/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
 import { getCurrentProfile } from "@/server/auth/session";
 import { requireModule } from "@/server/auth/guards";
 
@@ -37,46 +35,7 @@ export default async function ProductsPage() {
             <CardTitle>Catálogo</CardTitle>
           </CardHeader>
           <CardContent>
-            <DataTable
-              data={products}
-              searchPlaceholder="Buscar produto"
-              columns={[
-                { accessorKey: "name", header: "Produto" },
-                {
-                  accessorKey: "sale_price",
-                  header: "Venda",
-                  cell: ({ row }) => formatCurrency(Number(row.original.sale_price ?? 0)),
-                },
-                {
-                  accessorKey: "estimated_cost",
-                  header: "Custo",
-                  cell: ({ row }) => formatCurrency(Number(row.original.estimated_cost ?? 0)),
-                },
-                {
-                  accessorKey: "fulfillment_type",
-                  header: "Tipo",
-                  cell: ({ row }) => (
-                    <Badge variant={row.original.fulfillment_type === "pronta_entrega" ? "success" : "default"}>
-                      {row.original.fulfillment_type === "pronta_entrega" ? "Pronta entrega" : "Sob encomenda"}
-                    </Badge>
-                  ),
-                },
-                {
-                  accessorKey: "categories",
-                  header: "Categoria",
-                  cell: ({ row }) => row.original.categories?.name ?? "-",
-                },
-                {
-                  accessorKey: "is_active",
-                  header: "Status",
-                  cell: ({ row }) => (
-                    <Badge variant={row.original.is_active ? "success" : "muted"}>
-                      {row.original.is_active ? "Ativo" : "Inativo"}
-                    </Badge>
-                  ),
-                },
-              ]}
-            />
+            <ProductsTable products={products} />
           </CardContent>
         </Card>
       </section>

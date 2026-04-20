@@ -1,8 +1,7 @@
-import { DataTable } from "@/components/shared/data-table";
+import { InventoryMovementsTable } from "@/features/inventory/components/inventory-movements-table";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate } from "@/lib/utils";
 import { getInventoryPageData } from "@/features/inventory/server/queries";
 import { getCurrentProfile } from "@/server/auth/session";
 import { requireModule } from "@/server/auth/guards";
@@ -43,21 +42,7 @@ export default async function InventoryPage() {
             <CardTitle>Histórico de movimentações</CardTitle>
           </CardHeader>
           <CardContent>
-            <DataTable
-              data={movements}
-              searchPlaceholder="Buscar movimentação"
-              columns={[
-                { accessorKey: "ingredient_name", header: "Insumo" },
-                { accessorKey: "movement_type", header: "Tipo" },
-                { accessorKey: "quantity", header: "Quantidade" },
-                { accessorKey: "reason", header: "Motivo" },
-                {
-                  accessorKey: "created_at",
-                  header: "Data",
-                  cell: ({ row }) => formatDate(String(row.original.created_at), "DD/MM/YYYY HH:mm"),
-                },
-              ]}
-            />
+            <InventoryMovementsTable movements={movements} />
           </CardContent>
         </Card>
       </section>
