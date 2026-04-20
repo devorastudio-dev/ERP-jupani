@@ -40,19 +40,22 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="relative w-full max-w-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-stone-400" />
           <Input
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9"
+            className="h-11 rounded-2xl border-white bg-white/90 pl-9 shadow-sm shadow-rose-100/40"
           />
         </div>
+        <p className="text-xs text-stone-500">
+          {table.getFilteredRowModel().rows.length} registro{table.getFilteredRowModel().rows.length === 1 ? "" : "s"}
+        </p>
       </div>
-      <div className="rounded-2xl border border-rose-100 bg-white">
-        <Table>
+      <div className="overflow-hidden rounded-[1.5rem] border border-rose-100 bg-white shadow-sm shadow-rose-100/50">
+        <Table className="min-w-[720px]">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -87,11 +90,12 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         <Button
           type="button"
           variant="outline"
           size="sm"
+          className="w-full rounded-2xl sm:w-auto"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
@@ -101,6 +105,7 @@ export function DataTable<TData, TValue>({
           type="button"
           variant="outline"
           size="sm"
+          className="w-full rounded-2xl sm:w-auto"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >

@@ -24,7 +24,7 @@ export function AppBreadcrumb() {
   const segments = pathname.split("/").filter(Boolean);
 
   return (
-    <div className="flex items-center gap-1 text-sm text-stone-500">
+    <div className="hidden items-center gap-1 text-sm text-stone-500 md:flex">
       <Link href="/dashboard" className="hover:text-rose-600">
         Início
       </Link>

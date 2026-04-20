@@ -19,8 +19,8 @@ export default async function RecipesPage() {
         title="Fichas técnicas"
         description="Base de custo teórico por produto, pronta para automatizar baixa de estoque e recalcular preço."
       />
-      <section className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <Card>
+      <section className="grid gap-6 2xl:grid-cols-[0.72fr_1.28fr]">
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Resumo operacional</CardTitle>
           </CardHeader>

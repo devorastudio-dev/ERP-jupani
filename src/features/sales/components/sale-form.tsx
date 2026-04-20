@@ -105,7 +105,23 @@ export function SaleForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-3xl border border-rose-100 bg-gradient-to-r from-[#fff8f6] to-[#fff1ef] p-4">
+            <div className="grid gap-3 xl:grid-cols-3">
+              <div className="rounded-2xl bg-white/80 p-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Subtotal</p>
+                <p className="mt-1 text-lg font-semibold text-stone-900">{formatCurrency(subtotal)}</p>
+              </div>
+              <div className="rounded-2xl bg-white/80 p-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Total do pedido</p>
+                <p className="mt-1 text-lg font-semibold text-stone-900">{formatCurrency(total)}</p>
+              </div>
+              <div className="rounded-2xl bg-white/80 p-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Saldo pendente</p>
+                <p className="mt-1 text-lg font-semibold text-stone-900">{formatCurrency(pendingAmount)}</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-4 xl:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="customer_name">Cliente</Label>
               <Input id="customer_name" {...register("customer_name")} />
@@ -154,6 +170,7 @@ export function SaleForm({
                 type="button"
                 variant="outline"
                 size="sm"
+                className="rounded-2xl"
                 onClick={() =>
                   append({
                     product_id: "",
@@ -171,7 +188,7 @@ export function SaleForm({
             </div>
             <div className="space-y-3">
               {fields.map((field, index) => (
-                <div key={field.id} className="grid gap-3 rounded-2xl border border-rose-100 p-4 md:grid-cols-[1.5fr_0.6fr_0.7fr_0.7fr_auto]">
+                <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.52fr)_minmax(130px,0.62fr)_minmax(130px,0.62fr)_auto]">
                   <div className="space-y-2">
                     <Label>Produto</Label>
                     <select
@@ -243,8 +260,8 @@ export function SaleForm({
                       }}
                     />
                   </div>
-                  <div className="flex items-end gap-2">
-                    <div className="text-right">
+                  <div className="flex items-end justify-between gap-2 xl:justify-end">
+                    <div className="text-left xl:text-right">
                       <p className="text-xs text-stone-500">Total</p>
                       <p className="text-sm font-semibold text-stone-800">
                         {formatCurrency(Number(items[index]?.total_price ?? 0))}
@@ -262,7 +279,7 @@ export function SaleForm({
             {errors.items ? <p className="text-sm text-red-600">{errors.items.message as string}</p> : null}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 xl:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="delivery_fee">Taxa de entrega</Label>
               <Input id="delivery_fee" type="number" step="0.01" min="0" {...register("delivery_fee")} />
@@ -283,7 +300,7 @@ export function SaleForm({
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-[0.7fr_1.3fr]">
             <div className="space-y-2">
               <Label htmlFor="initial_payment_amount">Pagamento inicial</Label>
               <Input id="initial_payment_amount" type="number" step="0.01" min="0" {...register("initial_payment_amount")} />
@@ -299,7 +316,7 @@ export function SaleForm({
             <Textarea id="internal_notes" {...register("internal_notes")} />
           </div>
 
-          <div className="grid gap-3 rounded-2xl bg-rose-50 p-4 md:grid-cols-4">
+          <div className="grid gap-3 rounded-3xl bg-rose-50 p-4 xl:grid-cols-4">
             <div>
               <p className="text-xs text-stone-500">Subtotal</p>
               <p className="mt-1 font-semibold text-stone-900">{formatCurrency(subtotal)}</p>

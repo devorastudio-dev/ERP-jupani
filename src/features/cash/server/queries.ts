@@ -10,7 +10,30 @@ import type {
 export async function getCashPageData() {
   const supabase = await createClient();
 
-  const [sessions, movements, payables, receivables, openSession] = await Promise.all([
+  const openSession = await safeQuery<CashSessionRow | null>(
+    supabase
+      .from("cash_sessions")
+      .select("id, opened_at, closed_at, opening_balance, closing_balance, status")
+      .eq("status", "aberto")
+      .order("opened_at", { ascending: false })
+      .maybeSingle(),
+    null,
+  );
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const summaryQuery = openSession
+    ? supabase
+        .from("cash_movements")
+        .select("movement_type, amount")
+        .eq("cash_session_id", openSession.id)
+    : supabase
+        .from("cash_movements")
+        .select("movement_type, amount")
+        .gte("created_at", todayStart.toISOString());
+
+  const [sessions, movements, payables, receivables, summaryMovements] = await Promise.all([
     safeQuery<CashSessionRow[]>(
       supabase
         .from("cash_sessions")
@@ -45,16 +68,34 @@ export async function getCashPageData() {
         .limit(8),
       [],
     ),
-    safeQuery<CashSessionRow | null>(
-      supabase
-        .from("cash_sessions")
-        .select("id, opened_at, closed_at, opening_balance, closing_balance, status")
-        .eq("status", "aberto")
-        .order("opened_at", { ascending: false })
-        .maybeSingle(),
-      null,
-    ),
+    safeQuery<Array<{ movement_type: string; amount: number | null }>>(summaryQuery, []),
   ]);
 
-  return { sessions, movements, payables, receivables, openSession };
+  const totalEntries = summaryMovements
+    .filter((movement) => ["entrada", "reforco"].includes(movement.movement_type))
+    .reduce((sum, movement) => sum + Number(movement.amount ?? 0), 0);
+
+  const totalExits = summaryMovements
+    .filter((movement) => ["saida", "sangria"].includes(movement.movement_type))
+    .reduce((sum, movement) => sum + Number(movement.amount ?? 0), 0);
+
+  const openingBalance = Number(openSession?.opening_balance ?? 0);
+  const operationalBalance = totalEntries - totalExits;
+  const currentBalance = openingBalance + operationalBalance;
+
+  return {
+    sessions,
+    movements,
+    payables,
+    receivables,
+    openSession,
+    summary: {
+      totalEntries,
+      totalExits,
+      operationalBalance,
+      currentBalance,
+      openingBalance,
+      label: openSession ? "Sessão aberta atual" : "Movimentações de hoje",
+    },
+  };
 }

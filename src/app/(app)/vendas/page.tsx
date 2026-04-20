@@ -21,9 +21,9 @@ export default async function SalesPage() {
         description="Monte pedidos completos com itens, pagamentos, histórico de status e integração direta com o caixa."
       />
 
-      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <section className="grid gap-6 2xl:grid-cols-[1.05fr_0.75fr]">
         <SaleForm products={products} openCashSession={openCashSession} />
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Operação comercial</CardTitle>
           </CardHeader>

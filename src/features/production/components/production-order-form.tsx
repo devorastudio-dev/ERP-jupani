@@ -76,7 +76,7 @@ export function ProductionOrderForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="sale_id">Pedido relacionado</Label>
               <select id="sale_id" {...register("sale_id")} className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm">
@@ -103,7 +103,7 @@ export function ProductionOrderForm({
               </Button>
             </div>
             {fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 rounded-2xl border border-rose-100 p-4 md:grid-cols-[1.5fr_0.6fr_auto]">
+              <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.55fr)_auto]">
                 <div className="space-y-2">
                   <Label>Produto</Label>
                   <select
@@ -131,7 +131,7 @@ export function ProductionOrderForm({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="space-y-2 md:col-span-3">
+                <div className="space-y-2 xl:col-span-3">
                   <Label>Observações</Label>
                   <Textarea {...register(`items.${index}.notes`)} />
                 </div>

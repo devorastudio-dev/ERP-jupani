@@ -138,7 +138,7 @@ export function EmployeeForm({ allowSalary, employee, onSuccess }: EmployeeFormP
         <input type="checkbox" value="true" defaultChecked {...register("is_active")} />
         Funcionário ativo
       </label>
-      <div className="md:col-span-2">
+      <div className="sticky bottom-0 z-10 border-t border-rose-100 bg-white/95 pt-4 backdrop-blur md:col-span-2">
         <Button type="submit" disabled={pending}>
           {pending ? "Salvando..." : employee?.id ? "Atualizar funcionário" : "Salvar funcionário"}
         </Button>

@@ -59,7 +59,7 @@ export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
       <CardContent className="space-y-4">
         {sales.length ? (
           sales.map((sale) => (
-            <div key={sale.id} className="rounded-3xl border border-rose-100 bg-white p-5">
+            <div key={sale.id} className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -72,7 +72,7 @@ export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
                   </p>
                   <p className="text-sm text-stone-500">{sale.phone}</p>
                 </div>
-                <div className="grid gap-2 text-right sm:grid-cols-3 lg:min-w-[420px]">
+                <div className="grid gap-2 text-left sm:grid-cols-3 sm:text-right 2xl:min-w-[460px]">
                   <div>
                     <p className="text-xs text-stone-500">Total</p>
                     <p className="font-semibold text-stone-900">{formatCurrency(Number(sale.total_amount ?? 0))}</p>
@@ -88,7 +88,7 @@ export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+              <div className="mt-4 grid gap-6 2xl:grid-cols-[1.15fr_0.85fr]">
                 <div className="space-y-4">
                   <div>
                     <p className="mb-2 text-sm font-medium text-stone-700">Itens do pedido</p>
@@ -107,8 +107,8 @@ export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <form action={submitStatus} className="rounded-2xl border border-rose-100 p-4">
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    <form action={submitStatus} className="rounded-3xl border border-rose-100 p-4">
                       <input type="hidden" name="sale_id" value={sale.id} />
                       <div className="space-y-2">
                         <Label htmlFor={`status-${sale.id}`}>Atualizar status</Label>
@@ -134,7 +134,7 @@ export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
                       </Button>
                     </form>
 
-                    <form action={submitPayment} className="rounded-2xl border border-rose-100 p-4">
+                    <form action={submitPayment} className="rounded-3xl border border-rose-100 p-4">
                       <input type="hidden" name="sale_id" value={sale.id} />
                       <div className="space-y-2">
                         <Label htmlFor={`amount-${sale.id}`}>Registrar pagamento</Label>

@@ -158,7 +158,7 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
         <Label htmlFor="notes">Observações</Label>
         <Textarea id="notes" {...register("notes")} />
       </div>
-      <div className="md:col-span-2">
+      <div className="sticky bottom-0 z-10 border-t border-rose-100 bg-white/95 pt-4 backdrop-blur md:col-span-2">
         <Button type="submit" disabled={pending}>
           {pending ? "Salvando..." : ingredient?.id ? "Atualizar insumo" : "Salvar insumo"}
         </Button>

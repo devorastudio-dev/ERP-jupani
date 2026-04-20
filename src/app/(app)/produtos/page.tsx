@@ -17,7 +17,7 @@ export default async function ProductsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Produtos" description="Cadastre itens vendidos, acompanhe custo estimado e defina o tipo de atendimento." />
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid gap-6 2xl:grid-cols-[0.92fr_1.08fr]">
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -30,7 +30,7 @@ export default async function ProductsPage() {
           <ProductCategoriesCard categories={categories} />
         </div>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Catálogo</CardTitle>
           </CardHeader>

@@ -37,8 +37,8 @@ export function AccountsOverview({
   };
 
   return (
-    <section className="grid gap-6 xl:grid-cols-2">
-      <Card>
+    <section className="grid gap-6 2xl:grid-cols-2">
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Contas a pagar</CardTitle>
         </CardHeader>
@@ -58,7 +58,7 @@ export function AccountsOverview({
                     <p className="mt-2 font-semibold text-stone-900">{formatCurrency(Number(entry.amount ?? 0))}</p>
                   </div>
                 </div>
-                <form action={settlePayable} className="mt-4 grid gap-3 md:grid-cols-[0.8fr_0.8fr_1fr_auto]">
+                <form action={settlePayable} className="mt-4 grid gap-3 xl:grid-cols-[minmax(120px,0.7fr)_minmax(150px,0.8fr)_minmax(0,1fr)_auto]">
                   <input type="hidden" name="account_id" value={entry.id} />
                   <div className="space-y-2">
                     <Label>Valor</Label>
@@ -93,7 +93,7 @@ export function AccountsOverview({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Contas a receber</CardTitle>
         </CardHeader>

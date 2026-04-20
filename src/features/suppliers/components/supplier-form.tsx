@@ -162,7 +162,7 @@ export function SupplierForm({ supplierId, supplier, onSuccess }: SupplierFormPr
             </FormItem>
           )}
         />
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="sticky bottom-0 z-10 flex justify-end gap-2 border-t border-rose-100 bg-white/95 pt-4 backdrop-blur">
           <Button
             type="button"
             variant="outline"

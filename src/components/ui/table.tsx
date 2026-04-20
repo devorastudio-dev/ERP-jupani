@@ -17,8 +17,8 @@ export const TableRow = ({ className, ...props }: React.HTMLAttributes<HTMLTable
   <tr className={cn("border-b border-rose-50 transition-colors hover:bg-rose-50/50", className)} {...props} />
 );
 export const TableHead = ({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) => (
-  <th className={cn("h-11 px-4 text-left align-middle font-medium text-stone-500", className)} {...props} />
+  <th className={cn("h-11 px-3 py-3 text-left align-middle text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 md:px-4 md:text-sm md:normal-case md:tracking-normal", className)} {...props} />
 );
 export const TableCell = ({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
-  <td className={cn("p-4 align-middle text-stone-700", className)} {...props} />
+  <td className={cn("px-3 py-3 align-middle text-sm text-stone-700 md:p-4", className)} {...props} />
 );

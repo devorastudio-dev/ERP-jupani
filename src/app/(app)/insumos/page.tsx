@@ -19,7 +19,7 @@ export default async function IngredientsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Insumos e estoque" description="Controle entrada inicial, estoque mínimo, custo médio e histórico básico de movimentações." />
-      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <section className="grid gap-6 xl:grid-cols-[1_fr_1.5_fr]">
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -30,7 +30,17 @@ export default async function IngredientsPage() {
             </CardContent>
           </Card>
           <IngredientCategoriesCard categories={categories} />
-          <Card>
+          
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Estoque de insumos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <IngredientsTable ingredients={ingredients} categories={categories} />
+          </CardContent>
+        </Card>
+        <Card>
             <CardHeader>
               <CardTitle>Movimentações recentes</CardTitle>
             </CardHeader>
@@ -48,15 +58,6 @@ export default async function IngredientsPage() {
               ))}
             </CardContent>
           </Card>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Estoque de insumos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <IngredientsTable ingredients={ingredients} categories={categories} />
-          </CardContent>
-        </Card>
       </section>
     </div>
   );

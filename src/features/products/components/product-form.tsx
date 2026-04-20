@@ -51,8 +51,14 @@ export function ProductForm({ categories }: { categories: NamedCategory[] }) {
   });
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
-      <div className="space-y-2 md:col-span-2">
+    <form onSubmit={onSubmit} className="grid gap-4 xl:grid-cols-2">
+      <div className="rounded-3xl border border-rose-100 bg-gradient-to-r from-[#fff8f4] to-[#fff1ef] p-4 xl:col-span-2">
+        <p className="text-sm font-medium text-stone-700">Ficha comercial</p>
+        <p className="mt-1 text-sm text-stone-500">
+          Cadastre preço, rendimento, categoria e tipo de atendimento sem apertar o formulário em telas médias.
+        </p>
+      </div>
+      <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="name">Nome</Label>
         <Input id="name" {...register("name")} />
         {errors.name ? <p className="text-sm text-red-600">{errors.name.message}</p> : null}
@@ -101,19 +107,19 @@ export function ProductForm({ categories }: { categories: NamedCategory[] }) {
           <option value="pronta_entrega">Pronta entrega</option>
         </select>
       </div>
-      <div className="space-y-2 md:col-span-2">
+      <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="description">Descrição</Label>
         <Textarea id="description" {...register("description")} />
       </div>
-      <div className="space-y-2 md:col-span-2">
+      <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="notes">Observações</Label>
         <Textarea id="notes" {...register("notes")} />
       </div>
-      <label className="flex items-center gap-2 text-sm text-stone-600 md:col-span-2">
+      <label className="flex items-center gap-2 text-sm text-stone-600 xl:col-span-2">
         <input type="checkbox" value="true" defaultChecked {...register("is_active")} />
         Produto ativo
       </label>
-      <div className="md:col-span-2">
+      <div className="xl:col-span-2">
         <Button type="submit" disabled={pending}>
           {pending ? "Salvando..." : "Salvar produto"}
         </Button>

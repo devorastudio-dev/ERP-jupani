@@ -21,9 +21,9 @@ export default async function PurchasesPage() {
         description="Registre compras com itens, gere contas a pagar e aprove o recebimento para refletir no estoque."
       />
 
-      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <section className="grid gap-6 2xl:grid-cols-[1.02fr_0.78fr]">
         <PurchaseForm suppliers={suppliers} ingredients={ingredients} />
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Fornecedores cadastrados</CardTitle>
           </CardHeader>

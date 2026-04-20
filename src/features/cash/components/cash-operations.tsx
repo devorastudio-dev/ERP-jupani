@@ -106,8 +106,9 @@ export function CashOperations({ openSession }: { openSession: CashSessionRow | 
   });
 
   return (
-    <section className="grid gap-6 xl:grid-cols-3">
-      <Card>
+    <section className="space-y-6">
+      <div className="grid gap-6 xl:grid-cols-2">
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Abertura</CardTitle>
         </CardHeader>
@@ -127,13 +128,35 @@ export function CashOperations({ openSession }: { openSession: CashSessionRow | 
           </form>
         </CardContent>
       </Card>
+      <Card className="min-w-0">
+        <CardHeader>
+          <CardTitle>Fechamento</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={submitClose} className="space-y-4">
+            <input type="hidden" value={openSession?.id ?? ""} {...closeForm.register("session_id")} />
+            <div className="space-y-2">
+              <Label htmlFor="closing_balance">Saldo final contado</Label>
+              <Input id="closing_balance" type="number" step="0.01" min="0" {...closeForm.register("closing_balance")} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="close-notes">Observações</Label>
+              <Textarea id="close-notes" {...closeForm.register("notes")} />
+            </div>
+            <Button type="submit" variant="outline" disabled={pending || !openSession}>
+              {!openSession ? "Sem caixa aberto" : "Fechar caixa"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      </div>
 
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Lançamento manual</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submitMovement} className="space-y-4">
+          <form onSubmit={submitMovement} className="grid gap-4 xl:grid-cols-[0.7fr_0.8fr_0.6fr_1.2fr_auto] xl:items-end">
             <div className="space-y-2">
               <Label htmlFor="movement_type">Tipo</Label>
               <select id="movement_type" {...movementForm.register("movement_type")} className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm">
@@ -153,32 +176,10 @@ export function CashOperations({ openSession }: { openSession: CashSessionRow | 
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Descrição</Label>
-              <Textarea id="description" {...movementForm.register("description")} />
+              <Textarea id="description" className="min-h-10" {...movementForm.register("description")} />
             </div>
-            <Button type="submit" disabled={pending || !openSession}>
+            <Button type="submit" disabled={pending || !openSession} className="xl:mb-0.5">
               {!openSession ? "Abra o caixa primeiro" : "Registrar movimentação"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Fechamento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submitClose} className="space-y-4">
-            <input type="hidden" value={openSession?.id ?? ""} {...closeForm.register("session_id")} />
-            <div className="space-y-2">
-              <Label htmlFor="closing_balance">Saldo final contado</Label>
-              <Input id="closing_balance" type="number" step="0.01" min="0" {...closeForm.register("closing_balance")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="close-notes">Observações</Label>
-              <Textarea id="close-notes" {...closeForm.register("notes")} />
-            </div>
-            <Button type="submit" variant="outline" disabled={pending || !openSession}>
-              {!openSession ? "Sem caixa aberto" : "Fechar caixa"}
             </Button>
           </form>
         </CardContent>

@@ -85,7 +85,12 @@ export function PurchaseForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-3xl border border-rose-100 bg-gradient-to-r from-[#fff8f5] to-[#fff0ee] p-4">
+            <p className="text-sm font-medium text-stone-700">Resumo da compra</p>
+            <p className="mt-1 text-sm text-stone-500">Monte os itens com conforto em telas largas, sem esmagar campos numéricos.</p>
+            <p className="mt-3 text-2xl font-semibold text-stone-900">{formatCurrency(total)}</p>
+          </div>
+          <div className="grid gap-4 xl:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="supplier_id">Fornecedor</Label>
               <select
@@ -145,7 +150,7 @@ export function PurchaseForm({
               </Button>
             </div>
             {fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 rounded-2xl border border-rose-100 p-4 md:grid-cols-[1.5fr_0.6fr_0.7fr_0.8fr_auto]">
+              <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.55fr)_minmax(130px,0.65fr)_minmax(120px,0.65fr)_auto]">
                 <div className="space-y-2">
                   <Label>Insumo</Label>
                   <select
@@ -195,7 +200,7 @@ export function PurchaseForm({
                     }}
                   />
                 </div>
-                <div className="flex items-end">
+                <div className="flex items-end justify-between xl:justify-start">
                   <div>
                     <p className="text-xs text-stone-500">Total</p>
                     <p className="font-semibold text-stone-900">
@@ -224,7 +229,7 @@ export function PurchaseForm({
             <Textarea id="notes" {...register("notes")} />
           </div>
 
-          <div className="rounded-2xl bg-rose-50 p-4">
+          <div className="rounded-3xl bg-rose-50 p-4">
             <p className="text-sm text-stone-500">Total estimado da compra</p>
             <p className="mt-2 text-2xl font-semibold text-stone-900">{formatCurrency(total)}</p>
           </div>

@@ -96,7 +96,7 @@ export function RecipeForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="product_id">Produto</Label>
               <select
@@ -143,7 +143,7 @@ export function RecipeForm({
                   Number(selectedIngredient?.average_cost ?? 0) * Number(items[index]?.quantity ?? 0);
 
                 return (
-                  <div key={field.id} className="grid gap-3 rounded-2xl border border-rose-100 p-4 md:grid-cols-[1.6fr_0.6fr_0.6fr_auto]">
+                  <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.58fr)_minmax(120px,0.58fr)_auto]">
                     <div className="space-y-2">
                       <Label>Insumo</Label>
                       <select
@@ -166,8 +166,8 @@ export function RecipeForm({
                       <Label>Quantidade</Label>
                       <Input type="number" step="0.001" min="0.001" {...register(`items.${index}.quantity`)} />
                     </div>
-                    <div className="flex items-end justify-end gap-2">
-                      <div className="text-right">
+                    <div className="flex items-end justify-between gap-2 xl:justify-end">
+                      <div className="text-left xl:text-right">
                         <p className="text-xs text-stone-500">Custo</p>
                         <p className="text-sm font-semibold text-stone-800">{formatCurrency(currentCost)}</p>
                       </div>

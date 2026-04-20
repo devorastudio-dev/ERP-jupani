@@ -13,14 +13,54 @@ export default async function CashPage() {
   if (!profile) return null;
   requireModule(profile, "caixa");
 
-  const { sessions, movements, payables, receivables, openSession } = await getCashPageData();
+  const { sessions, movements, payables, receivables, openSession, summary } = await getCashPageData();
 
   return (
     <div className="space-y-6">
       <PageHeader title="Caixa e financeiro" description="Acompanhe aberturas, fechamentos, sangrias, reforços e movimentações do dia a dia." />
+      <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+        <Card className="min-w-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Entradas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-emerald-700">{formatCurrency(summary.totalEntries)}</p>
+            <p className="mt-1 text-sm text-stone-500">{summary.label}</p>
+          </CardContent>
+        </Card>
+        <Card className="min-w-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Saídas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-rose-700">{formatCurrency(summary.totalExits)}</p>
+            <p className="mt-1 text-sm text-stone-500">Sangrias e despesas lançadas</p>
+          </CardContent>
+        </Card>
+        <Card className="min-w-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Saldo operacional</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-stone-900">{formatCurrency(summary.operationalBalance)}</p>
+            <p className="mt-1 text-sm text-stone-500">Entradas menos saídas</p>
+          </CardContent>
+        </Card>
+        <Card className="min-w-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">{openSession ? "Saldo atual do caixa" : "Base do período"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-stone-900">{formatCurrency(summary.currentBalance)}</p>
+            <p className="mt-1 text-sm text-stone-500">
+              {openSession ? `Abertura em ${formatDate(openSession.opened_at, "DD/MM/YYYY HH:mm")}` : `Saldo inicial ${formatCurrency(summary.openingBalance)}`}
+            </p>
+          </CardContent>
+        </Card>
+      </section>
       <CashOperations openSession={openSession} />
-      <section className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
-        <Card>
+      <section className="grid gap-6 2xl:grid-cols-[0.8fr_1.2fr]">
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Sessões de caixa</CardTitle>
           </CardHeader>
@@ -44,7 +84,7 @@ export default async function CashPage() {
             )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Movimentações recentes</CardTitle>
           </CardHeader>
