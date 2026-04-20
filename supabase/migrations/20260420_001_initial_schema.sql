@@ -761,8 +761,14 @@ for update using (auth.uid() = id or public.has_role('admin'));
 create policy "admins manage roles" on public.roles
 for all using (public.has_role('admin')) with check (public.has_role('admin'));
 
+create policy "authenticated read roles" on public.roles
+for select using (auth.role() = 'authenticated');
+
 create policy "admins manage user roles" on public.user_roles
 for all using (public.has_role('admin')) with check (public.has_role('admin'));
+
+create policy "users read own roles" on public.user_roles
+for select using (auth.uid() = user_id or public.has_role('admin'));
 
 create policy "authenticated read master data" on public.customers
 for select using (auth.role() = 'authenticated');
@@ -911,4 +917,3 @@ with check (public.has_any_role(array['admin', 'financeiro']::public.role_slug[]
 
 create policy "admin only audit logs" on public.audit_logs
 for select using (public.has_role('admin'));
-

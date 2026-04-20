@@ -18,27 +18,16 @@ export const getCurrentProfile = cache(async (): Promise<AuthUserProfile | null>
 
   if (!user) return null;
 
-  const [{ data: profile }, { data: roleRows }] = await Promise.all([
+  const [{ data: profile }, { data: roleSlugs }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, email").eq("id", user.id).maybeSingle(),
-    supabase
-      .from("user_roles")
-      .select("roles:role_id(slug)")
-      .eq("user_id", user.id),
+    supabase.rpc("current_user_roles"),
   ]);
-
-  const roles =
-    roleRows
-      ?.map((row) => {
-        const role = row.roles as { slug?: RoleSlug } | null;
-        return role?.slug;
-      })
-      .filter(Boolean) ?? [];
 
   return {
     id: profile?.id ?? user.id,
     full_name: profile?.full_name ?? user.user_metadata.full_name ?? "Usuário",
     email: profile?.email ?? user.email ?? "",
-    roles: roles as RoleSlug[],
+    roles: ((roleSlugs ?? []) as RoleSlug[]) ?? [],
   };
 });
 
