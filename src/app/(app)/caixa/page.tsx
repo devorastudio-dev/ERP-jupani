@@ -1,4 +1,5 @@
 import { AccountsOverview } from "@/features/cash/components/accounts-overview";
+import { CashOperations } from "@/features/cash/components/cash-operations";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,11 +13,12 @@ export default async function CashPage() {
   if (!profile) return null;
   requireModule(profile, "caixa");
 
-  const { sessions, movements, payables, receivables } = await getCashPageData();
+  const { sessions, movements, payables, receivables, openSession } = await getCashPageData();
 
   return (
     <div className="space-y-6">
       <PageHeader title="Caixa e financeiro" description="Acompanhe aberturas, fechamentos, sangrias, reforços e movimentações do dia a dia." />
+      <CashOperations openSession={openSession} />
       <section className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
         <Card>
           <CardHeader>

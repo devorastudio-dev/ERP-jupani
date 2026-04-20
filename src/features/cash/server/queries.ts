@@ -10,7 +10,7 @@ import type {
 export async function getCashPageData() {
   const supabase = await createClient();
 
-  const [sessions, movements, payables, receivables] = await Promise.all([
+  const [sessions, movements, payables, receivables, openSession] = await Promise.all([
     safeQuery<CashSessionRow[]>(
       supabase
         .from("cash_sessions")
@@ -45,7 +45,16 @@ export async function getCashPageData() {
         .limit(8),
       [],
     ),
+    safeQuery<CashSessionRow | null>(
+      supabase
+        .from("cash_sessions")
+        .select("id, opened_at, closed_at, opening_balance, closing_balance, status")
+        .eq("status", "aberto")
+        .order("opened_at", { ascending: false })
+        .maybeSingle(),
+      null,
+    ),
   ]);
 
-  return { sessions, movements, payables, receivables };
+  return { sessions, movements, payables, receivables, openSession };
 }
