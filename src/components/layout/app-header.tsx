@@ -1,0 +1,40 @@
+import Link from "next/link";
+import { Bell, Search } from "lucide-react";
+import type { AuthUserProfile } from "@/types/app";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { AppBreadcrumb } from "@/components/layout/app-breadcrumb";
+
+export function AppHeader({ profile }: { profile: AuthUserProfile }) {
+  return (
+    <header className="sticky top-0 z-20 border-b border-rose-100 bg-[#fffdfb]/90 backdrop-blur">
+      <div className="flex flex-col gap-4 px-4 py-4 md:px-8">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <AppBreadcrumb />
+            <h2 className="mt-2 text-2xl font-semibold text-stone-900">Visão operacional da confeitaria</h2>
+          </div>
+          <div className="hidden items-center gap-3 md:flex">
+            <div className="relative w-72">
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-stone-400" />
+              <Input placeholder="Buscar pedidos, produtos ou clientes" className="pl-9" />
+            </div>
+            <button className="rounded-2xl border border-rose-100 bg-white p-3 text-stone-500">
+              <Bell className="h-4 w-4" />
+            </button>
+            <Link href="/configuracoes" className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white px-3 py-2">
+              <Avatar>
+                <AvatarFallback>{profile.full_name}</AvatarFallback>
+              </Avatar>
+              <div className="text-left">
+                <p className="text-sm font-medium text-stone-800">{profile.full_name}</p>
+                <Badge variant="default">{profile.roles[0] ?? "colaborador"}</Badge>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
