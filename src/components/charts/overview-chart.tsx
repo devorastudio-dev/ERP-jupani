@@ -14,12 +14,13 @@ export function OverviewChart({
   data: Array<{ label: string; value: number }>;
 }) {
   return (
-    <Card className="h-full">
+    <Card className="h-full min-w-0">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="h-80">
+      <CardContent className="min-w-0">
+        <div className="h-80 min-h-80 w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>
@@ -34,6 +35,7 @@ export function OverviewChart({
             <Area type="monotone" dataKey="value" stroke="#e11d48" fill="url(#salesGradient)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );
