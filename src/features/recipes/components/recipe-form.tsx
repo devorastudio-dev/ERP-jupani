@@ -1,13 +1,13 @@
 "use client";
 /* eslint-disable react-hooks/incompatible-library */
 
-import { useMemo, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { createRecipeAction } from "@/features/recipes/actions";
+import { createRecipeAction, updateRecipeAction } from "@/features/recipes/actions";
 import { recipeSchema } from "@/features/recipes/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,15 +15,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/utils";
-import type { IngredientRow, ProductRow } from "@/types/entities";
+import type { IngredientRow, ProductRow, RecipeRow } from "@/types/entities";
+
+interface RecipeFormProps {
+  products: ProductRow[];
+  ingredients: IngredientRow[];
+  recipe?: RecipeRow | null;
+  onSuccess?: () => void;
+}
 
 export function RecipeForm({
   products,
   ingredients,
-}: {
-  products: ProductRow[];
-  ingredients: IngredientRow[];
-}) {
+  recipe,
+  onSuccess,
+}: RecipeFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const {
@@ -56,6 +62,21 @@ export function RecipeForm({
     [ingredients],
   );
 
+  useEffect(() => {
+    reset({
+      product_id: recipe?.product_id ?? "",
+      packaging_cost: Number(recipe?.packaging_cost ?? 0),
+      additional_cost: Number(recipe?.additional_cost ?? 0),
+      notes: recipe?.notes ?? "",
+      items:
+        recipe?.recipe_items?.map((item) => ({
+          ingredient_id: item.ingredient_id,
+          unit: item.unit,
+          quantity: Number(item.quantity ?? 1),
+        })) ?? [{ ingredient_id: "", unit: "g", quantity: 1 }],
+    });
+  }, [recipe, reset]);
+
   const ingredientCost = items.reduce((sum, item) => {
     const ingredient = ingredientsMap.get(item.ingredient_id);
     return sum + Number(ingredient?.average_cost ?? 0) * Number(item.quantity ?? 0);
@@ -72,19 +93,22 @@ export function RecipeForm({
       formData.set("notes", values.notes ?? "");
       formData.set("items", JSON.stringify(values.items));
 
-      const result = await createRecipeAction(formData);
+      const result = recipe?.id ? await updateRecipeAction(recipe.id, formData) : await createRecipeAction(formData);
       if (!result?.success) {
         toast.error(result?.error ?? "Não foi possível salvar a ficha técnica.");
         return;
       }
 
-      toast.success("Ficha técnica salva com sucesso.");
-      reset({
-        packaging_cost: 0,
-        additional_cost: 0,
-        notes: "",
-        items: [{ ingredient_id: "", unit: "g", quantity: 1 }],
-      });
+      toast.success(recipe?.id ? "Ficha técnica atualizada com sucesso." : "Ficha técnica salva com sucesso.");
+      if (!recipe?.id) {
+        reset({
+          packaging_cost: 0,
+          additional_cost: 0,
+          notes: "",
+          items: [{ ingredient_id: "", unit: "g", quantity: 1 }],
+        });
+      }
+      onSuccess?.();
       router.refresh();
     });
   });
@@ -92,7 +116,7 @@ export function RecipeForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nova ficha técnica</CardTitle>
+        <CardTitle>{recipe?.id ? "Editar ficha técnica" : "Nova ficha técnica"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-5">
@@ -196,7 +220,7 @@ export function RecipeForm({
           </div>
 
           <Button type="submit" disabled={pending}>
-            {pending ? "Salvando..." : "Salvar ficha técnica"}
+            {pending ? "Salvando..." : recipe?.id ? "Atualizar ficha técnica" : "Salvar ficha técnica"}
           </Button>
         </form>
       </CardContent>

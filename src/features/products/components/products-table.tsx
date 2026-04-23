@@ -3,9 +3,16 @@
 import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
-import type { ProductRow } from "@/types/entities";
+import { ProductFormDialog } from "@/features/products/components/product-form-dialog";
+import type { NamedCategory, ProductRow } from "@/types/entities";
 
-export function ProductsTable({ products }: { products: ProductRow[] }) {
+export function ProductsTable({
+  products,
+  categories,
+}: {
+  products: ProductRow[];
+  categories: NamedCategory[];
+}) {
   return (
     <DataTable
       data={products}
@@ -21,6 +28,30 @@ export function ProductsTable({ products }: { products: ProductRow[] }) {
           accessorKey: "estimated_cost",
           header: "Custo",
           cell: ({ row }) => formatCurrency(Number(row.original.estimated_cost ?? 0)),
+        },
+        {
+          id: "finished_stock",
+          header: "Estoque",
+          cell: ({ row }) =>
+            row.original.fulfillment_type === "pronta_entrega"
+              ? `${Number(row.original.finished_stock_quantity ?? 0).toFixed(3)} / min ${Number(row.original.minimum_finished_stock ?? 0).toFixed(3)}`
+              : "-",
+        },
+        {
+          id: "margin",
+          header: "Margem",
+          cell: ({ row }) => {
+            const salePrice = Number(row.original.sale_price ?? 0);
+            const estimatedCost = Number(row.original.estimated_cost ?? 0);
+            const margin = salePrice - estimatedCost;
+            const marginPercent = salePrice > 0 ? (margin / salePrice) * 100 : 0;
+
+            return (
+              <Badge variant={margin >= 0 ? (marginPercent >= 30 ? "success" : "warning") : "danger"}>
+                {marginPercent.toFixed(1)}%
+              </Badge>
+            );
+          },
         },
         {
           accessorKey: "fulfillment_type",
@@ -44,6 +75,20 @@ export function ProductsTable({ products }: { products: ProductRow[] }) {
               {row.original.is_active ? "Ativo" : "Inativo"}
             </Badge>
           ),
+        },
+        {
+          id: "recipe",
+          header: "Ficha",
+          cell: ({ row }) => (
+            <Badge variant={row.original.recipes?.length ? "success" : "muted"}>
+              {row.original.recipes?.length ? "Vinculada" : "Sem ficha"}
+            </Badge>
+          ),
+        },
+        {
+          id: "actions",
+          header: "",
+          cell: ({ row }) => <ProductFormDialog product={row.original} categories={categories} />,
         },
       ]}
     />

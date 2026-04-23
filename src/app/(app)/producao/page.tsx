@@ -11,7 +11,7 @@ export default async function ProductionPage() {
   if (!profile) return null;
   requireModule(profile, "producao");
 
-  const { orders, sales, products } = await getProductionPageData();
+  const { orders, sales, allSales, products } = await getProductionPageData();
 
   return (
     <div className="space-y-6">
@@ -43,7 +43,7 @@ export default async function ProductionPage() {
         </Card>
       </section>
 
-      <ProductionOrdersList orders={orders} />
+      <ProductionOrdersList orders={orders} sales={allSales} products={products} />
     </div>
   );
 }

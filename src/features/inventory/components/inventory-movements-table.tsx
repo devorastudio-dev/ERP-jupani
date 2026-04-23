@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/shared/data-table";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { InventoryMovementRow } from "@/types/entities";
 
 export function InventoryMovementsTable({ movements }: { movements: InventoryMovementRow[] }) {
@@ -13,6 +13,11 @@ export function InventoryMovementsTable({ movements }: { movements: InventoryMov
         { accessorKey: "ingredient_name", header: "Insumo" },
         { accessorKey: "movement_type", header: "Tipo" },
         { accessorKey: "quantity", header: "Quantidade" },
+        {
+          accessorKey: "unit_cost",
+          header: "Custo",
+          cell: ({ row }) => formatCurrency(Number(row.original.unit_cost ?? 0)),
+        },
         { accessorKey: "reason", header: "Motivo" },
         {
           accessorKey: "created_at",

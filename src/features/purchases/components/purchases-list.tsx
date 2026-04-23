@@ -4,18 +4,23 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { approvePurchaseAction } from "@/features/purchases/actions";
+import { PurchaseFormDialog } from "@/features/purchases/components/purchase-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { AccountPayableRow, PurchaseRow } from "@/types/entities";
+import type { AccountPayableRow, IngredientRow, PurchaseRow, SupplierRow } from "@/types/entities";
 
 export function PurchasesList({
   purchases,
   payables,
+  suppliers,
+  ingredients,
 }: {
   purchases: PurchaseRow[];
   payables: AccountPayableRow[];
+  suppliers: SupplierRow[];
+  ingredients: IngredientRow[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -59,17 +64,19 @@ export function PurchasesList({
                 <div className="text-right">
                   <p className="text-xs text-stone-500">Total</p>
                   <p className="text-xl font-semibold text-stone-900">{formatCurrency(Number(purchase.total_amount ?? 0))}</p>
-                  {purchase.status !== "recebida" && purchase.status !== "cancelada" ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-3"
-                      onClick={() => approvePurchase(purchase.id)}
-                      disabled={pending}
-                    >
-                      Aprovar recebimento
-                    </Button>
-                  ) : null}
+                  <div className="mt-3 flex justify-end gap-2">
+                    <PurchaseFormDialog purchase={purchase} suppliers={suppliers} ingredients={ingredients} />
+                    {purchase.status !== "recebida" && purchase.status !== "cancelada" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => approvePurchase(purchase.id)}
+                        disabled={pending}
+                      >
+                        Aprovar recebimento
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               </div>
 

@@ -6,13 +6,19 @@ export interface NamedCategory {
 export interface ProductRow {
   id: string;
   name: string;
+  category_id?: string | null;
+  description?: string | null;
   sale_price: number | null;
   estimated_cost: number | null;
+  finished_stock_quantity?: number | null;
+  minimum_finished_stock?: number | null;
   is_active: boolean;
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   unit: string;
   yield_quantity?: number | null;
+  notes?: string | null;
   categories?: { name?: string | null } | null;
+  recipes?: Array<{ id: string; theoretical_cost?: number | null }> | null;
 }
 
 export interface IngredientRow {
@@ -30,9 +36,11 @@ export interface IngredientRow {
 
 export interface InventoryMovementRow {
   id: string;
+  ingredient_id?: string | null;
   ingredient_name: string | null;
   movement_type: string;
   quantity: number | null;
+  unit_cost?: number | null;
   created_at: string;
   reason?: string | null;
 }
@@ -80,6 +88,7 @@ export interface SaleSummaryRow {
   internal_notes?: string | null;
   delivery_date: string | null;
   fiscal_status: string | null;
+  stock_deducted?: boolean;
   sale_items?: SaleItemRow[];
   sale_payments?: SalePaymentRow[];
   order_status_history?: OrderStatusHistoryRow[];
@@ -134,8 +143,29 @@ export interface ReceivableRow {
 }
 
 export interface TopProductRow {
+  product_id?: string | null;
   product_name: string;
   quantity: number | null;
+  total_price?: number | null;
+  estimated_margin?: number | null;
+  margin_percent?: number | null;
+}
+
+export interface DashboardAlertRow {
+  title: string;
+  detail: string;
+  tone: "warning" | "danger" | "success";
+}
+
+export interface ProductStockMovementRow {
+  id: string;
+  product_id?: string | null;
+  product_name: string;
+  movement_type: string;
+  quantity: number | null;
+  reason?: string | null;
+  reference_type?: string | null;
+  created_at: string;
 }
 
 export interface CashSessionRow {
@@ -159,6 +189,7 @@ export interface CashMovementRow {
 
 export interface PurchaseRow {
   id: string;
+  supplier_id?: string | null;
   purchase_date: string;
   supplier_name: string;
   total_amount: number | null;
@@ -206,9 +237,15 @@ export interface EmployeePaymentRow {
 }
 
 export interface ReportSaleByProductRow {
+  product_id?: string | null;
   product_name: string;
   quantity: number | null;
   total_price: number | null;
+  estimated_cost?: number | null;
+  gross_revenue?: number | null;
+  estimated_total_cost?: number | null;
+  estimated_margin?: number | null;
+  margin_percent?: number | null;
 }
 
 export interface ReportExpenseRow {
@@ -221,6 +258,7 @@ export interface ProductionOrderRow {
   id: string;
   deadline: string | null;
   status: string;
+  stock_deducted?: boolean;
   notes?: string | null;
   sale_id?: string | null;
   production_order_items?: ProductionOrderItemRow[];

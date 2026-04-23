@@ -15,6 +15,7 @@ export async function getPurchasesPageData() {
         .from("purchases")
         .select(`
           id,
+          supplier_id,
           purchase_date,
           supplier_name,
           total_amount,
@@ -52,5 +53,21 @@ export async function getPurchasesPageData() {
     ),
   ]);
 
-  return { purchases, suppliers, ingredients, payables };
+  const suggestedPurchases = ingredients
+    .filter((ingredient) => Number(ingredient.stock_quantity ?? 0) < Number(ingredient.minimum_stock ?? 0))
+    .map((ingredient) => {
+      const currentStock = Number(ingredient.stock_quantity ?? 0);
+      const minimumStock = Number(ingredient.minimum_stock ?? 0);
+      const suggestedQuantity = Math.max(minimumStock - currentStock, 0);
+      const projectedCost = suggestedQuantity * Number(ingredient.average_cost ?? 0);
+
+      return {
+        ...ingredient,
+        suggested_quantity: suggestedQuantity,
+        projected_cost: projectedCost,
+      };
+    })
+    .sort((a, b) => Number(b.projected_cost) - Number(a.projected_cost));
+
+  return { purchases, suppliers, ingredients, payables, suggestedPurchases };
 }

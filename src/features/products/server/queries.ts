@@ -1,22 +1,30 @@
 import { createClient } from "@/server/supabase/server";
 import { safeQuery } from "@/server/db/safe-query";
-import type { NamedCategory, ProductRow } from "@/types/entities";
+import type { NamedCategory, ProductRow, ProductStockMovementRow } from "@/types/entities";
 
 export async function getProductsPageData() {
   const supabase = await createClient();
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, productStockMovements] = await Promise.all([
     safeQuery<ProductRow[]>(
       supabase
         .from("products")
         .select(
-          "id, name, sale_price, estimated_cost, is_active, fulfillment_type, unit, yield_quantity, categories:product_categories(name)",
+          "id, name, category_id, description, sale_price, estimated_cost, finished_stock_quantity, minimum_finished_stock, is_active, fulfillment_type, unit, yield_quantity, notes, categories:product_categories(name), recipes(id, theoretical_cost)",
         )
         .order("name"),
       [],
     ),
     safeQuery<NamedCategory[]>(supabase.from("product_categories").select("id, name").order("name"), []),
+    safeQuery<ProductStockMovementRow[]>(
+      supabase
+        .from("product_stock_movements")
+        .select("id, product_id, product_name, movement_type, quantity, reason, reference_type, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20),
+      [],
+    ),
   ]);
 
-  return { products, categories };
+  return { products, categories, productStockMovements };
 }

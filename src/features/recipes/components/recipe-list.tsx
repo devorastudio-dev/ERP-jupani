@@ -1,9 +1,18 @@
+import { RecipeFormDialog } from "@/features/recipes/components/recipe-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import type { RecipeRow } from "@/types/entities";
+import type { IngredientRow, ProductRow, RecipeRow } from "@/types/entities";
 
-export function RecipeList({ recipes }: { recipes: RecipeRow[] }) {
+export function RecipeList({
+  recipes,
+  products,
+  ingredients,
+}: {
+  recipes: RecipeRow[];
+  products: ProductRow[];
+  ingredients: IngredientRow[];
+}) {
   return (
     <Card>
       <CardHeader>
@@ -28,6 +37,7 @@ export function RecipeList({ recipes }: { recipes: RecipeRow[] }) {
                   <Badge variant="default">
                     Adicional {formatCurrency(Number(recipe.additional_cost ?? 0))}
                   </Badge>
+                  <RecipeFormDialog recipe={recipe} products={products} ingredients={ingredients} />
                 </div>
               </div>
               <div className="mt-4 space-y-2">

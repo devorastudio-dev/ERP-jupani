@@ -1,13 +1,13 @@
 "use client";
 /* eslint-disable react-hooks/incompatible-library */
 
-import { useMemo, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { createSaleAction } from "@/features/sales/actions";
+import { createSaleAction, updateSaleAction } from "@/features/sales/actions";
 import { saleSchema } from "@/features/sales/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,15 +16,33 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
-import type { CashSessionRow, ProductRow } from "@/types/entities";
+import type { CashSessionRow, ProductRow, SaleSummaryRow } from "@/types/entities";
+
+const saleTypeOptions = ["balcao", "encomenda"] as const;
+const orderTypeOptions = ["retirada", "entrega"] as const;
+const saleStatusOptions = [
+  "orcamento",
+  "aguardando_confirmacao",
+  "confirmado",
+  "em_producao",
+  "pronto",
+  "entregue",
+  "cancelado",
+] as const;
+
+interface SaleFormProps {
+  products: ProductRow[];
+  openCashSession: CashSessionRow | null;
+  sale?: SaleSummaryRow | null;
+  onSuccess?: () => void;
+}
 
 export function SaleForm({
   products,
   openCashSession,
-}: {
-  products: ProductRow[];
-  openCashSession: CashSessionRow | null;
-}) {
+  sale,
+  onSuccess,
+}: SaleFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const {
@@ -64,6 +82,39 @@ export function SaleForm({
   const total = subtotal + deliveryFee - orderDiscount;
   const pendingAmount = Math.max(total - initialPayment, 0);
 
+  useEffect(() => {
+    reset({
+      sale_type: saleTypeOptions.includes((sale?.sale_type ?? "encomenda") as (typeof saleTypeOptions)[number])
+        ? ((sale?.sale_type ?? "encomenda") as (typeof saleTypeOptions)[number])
+        : "encomenda",
+      order_type: orderTypeOptions.includes((sale?.order_type ?? "retirada") as (typeof orderTypeOptions)[number])
+        ? ((sale?.order_type ?? "retirada") as (typeof orderTypeOptions)[number])
+        : "retirada",
+      customer_name: sale?.customer_name ?? "",
+      phone: sale?.phone ?? "",
+      status: saleStatusOptions.includes((sale?.status ?? "aguardando_confirmacao") as (typeof saleStatusOptions)[number])
+        ? ((sale?.status ?? "aguardando_confirmacao") as (typeof saleStatusOptions)[number])
+        : "aguardando_confirmacao",
+      delivery_date: sale?.delivery_date ? new Date(sale.delivery_date).toISOString().slice(0, 16) : "",
+      delivery_fee: Number(sale?.delivery_fee ?? 0),
+      discount_amount: Number(sale?.discount_amount ?? 0),
+      payment_method: sale?.payment_method ?? "",
+      initial_payment_amount: sale?.id ? 0 : 0,
+      notes: sale?.notes ?? "",
+      internal_notes: sale?.internal_notes ?? "",
+      items:
+        sale?.sale_items?.map((item) => ({
+          product_id: item.product_id ?? "",
+          product_name: item.product_name,
+          quantity: Number(item.quantity ?? 1),
+          unit_price: Number(item.unit_price ?? 0),
+          discount_amount: Number(item.discount_amount ?? 0),
+          total_price: Number(item.total_price ?? 0),
+          notes: item.notes ?? "",
+        })) ?? [{ product_id: "", product_name: "", quantity: 1, unit_price: 0, discount_amount: 0, total_price: 0 }],
+    });
+  }, [sale, reset]);
+
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
       const formData = new FormData();
@@ -81,14 +132,17 @@ export function SaleForm({
       formData.set("internal_notes", values.internal_notes ?? "");
       formData.set("items", JSON.stringify(values.items));
 
-      const result = await createSaleAction(formData);
+      const result = sale?.id ? await updateSaleAction(sale.id, formData) : await createSaleAction(formData);
       if (!result?.success) {
         toast.error(result?.error ?? "Não foi possível criar o pedido.");
         return;
       }
 
-      toast.success("Pedido criado com sucesso.");
-      reset();
+      toast.success(sale?.id ? "Pedido atualizado com sucesso." : "Pedido criado com sucesso.");
+      if (!sale?.id) {
+        reset();
+      }
+      onSuccess?.();
       router.refresh();
     });
   });
@@ -97,7 +151,7 @@ export function SaleForm({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
-          <CardTitle>Novo pedido</CardTitle>
+          <CardTitle>{sale?.id ? "Editar pedido" : "Novo pedido"}</CardTitle>
           <Badge variant={openCashSession ? "success" : "warning"}>
             {openCashSession ? "Caixa aberto" : "Sem caixa aberto"}
           </Badge>
@@ -206,9 +260,12 @@ export function SaleForm({
                     >
                       <option value="">Selecione</option>
                       {products.map((product) => (
-                        <option key={product.id} value={product.id}>
-                          {product.name}
-                        </option>
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                        {product.fulfillment_type === "pronta_entrega"
+                          ? ` • estoque ${Number(product.finished_stock_quantity ?? 0).toFixed(3)} ${product.unit}`
+                          : ""}
+                      </option>
                       ))}
                     </select>
                   </div>
@@ -301,10 +358,17 @@ export function SaleForm({
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[0.7fr_1.3fr]">
-            <div className="space-y-2">
-              <Label htmlFor="initial_payment_amount">Pagamento inicial</Label>
-              <Input id="initial_payment_amount" type="number" step="0.01" min="0" {...register("initial_payment_amount")} />
-            </div>
+            {sale?.id ? (
+              <div className="space-y-2">
+                <Label>Recebido até agora</Label>
+                <Input value={formatCurrency(Number(sale.paid_amount ?? 0))} readOnly />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="initial_payment_amount">Pagamento inicial</Label>
+                <Input id="initial_payment_amount" type="number" step="0.01" min="0" {...register("initial_payment_amount")} />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="notes">Observações para o cliente</Label>
               <Textarea id="notes" {...register("notes")} />
@@ -336,7 +400,7 @@ export function SaleForm({
           </div>
 
           <Button type="submit" disabled={pending}>
-            {pending ? "Criando pedido..." : "Criar pedido"}
+            {pending ? "Salvando pedido..." : sale?.id ? "Atualizar pedido" : "Criar pedido"}
           </Button>
         </form>
       </CardContent>

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/server/supabase/server";
 import { salePaymentSchema, saleSchema, saleStatusSchema } from "@/features/sales/schema";
+import { formatStockShortageMessage, validateStockForProducts } from "@/server/operations/inventory-costs";
+import { ensureProductionOrderForSale } from "@/server/operations/production";
 
 async function getSaleFinancialCategoryId() {
   const supabase = await createClient();
@@ -58,6 +60,52 @@ async function registerCashReceipt({
   });
 }
 
+async function syncReceivableForSale({
+  saleId,
+  customerName,
+  dueDate,
+  totalAmount,
+  receivedAmount,
+  notes,
+}: {
+  saleId: string;
+  customerName: string;
+  dueDate: string;
+  totalAmount: number;
+  receivedAmount: number;
+  notes?: string;
+}) {
+  const supabase = await createClient();
+  const pendingAmount = Math.max(totalAmount - receivedAmount, 0);
+  const status = pendingAmount <= 0 ? "pago" : receivedAmount > 0 ? "parcial" : "pendente";
+
+  const { data: existingReceivable } = await supabase
+    .from("accounts_receivable")
+    .select("id")
+    .eq("sale_id", saleId)
+    .maybeSingle();
+
+  const payload = {
+    sale_id: saleId,
+    description: `Recebimento do pedido ${customerName}`,
+    amount: totalAmount,
+    received_amount: receivedAmount,
+    due_date: dueDate,
+    status,
+    origin: "sale",
+    notes,
+  };
+
+  if (existingReceivable?.id) {
+    await supabase.from("accounts_receivable").update(payload).eq("id", existingReceivable.id);
+    return;
+  }
+
+  if (totalAmount > 0) {
+    await supabase.from("accounts_receivable").insert(payload);
+  }
+}
+
 export async function createSaleAction(formData: FormData) {
   const rawItems = formData.get("items");
   let parsedItems: unknown[] = [];
@@ -86,6 +134,21 @@ export async function createSaleAction(formData: FormData) {
 
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Pedido inválido." };
+  }
+
+  if (["confirmado", "em_producao", "pronto", "entregue"].includes(parsed.data.status)) {
+    const stockValidation = await validateStockForProducts(
+      parsed.data.items.map((item) => ({
+        productId: item.product_id,
+        productName: item.product_name,
+        quantity: Number(item.quantity),
+      })),
+      "sale",
+    );
+
+    if (!stockValidation.isValid) {
+      return { success: false, error: formatStockShortageMessage(stockValidation.shortages) };
+    }
   }
 
   const supabase = await createClient();
@@ -189,6 +252,159 @@ export async function createSaleAction(formData: FormData) {
   revalidatePath("/vendas");
   revalidatePath("/dashboard");
   revalidatePath("/caixa");
+  revalidatePath("/producao");
+
+  await ensureProductionOrderForSale(sale.id);
+
+  return { success: true };
+}
+
+export async function updateSaleAction(id: string, formData: FormData) {
+  const rawItems = formData.get("items");
+  let parsedItems: unknown[] = [];
+
+  try {
+    parsedItems = rawItems ? JSON.parse(String(rawItems)) : [];
+  } catch {
+    return { success: false, error: "Não foi possível ler os itens do pedido." };
+  }
+
+  const parsed = saleSchema.safeParse({
+    sale_type: formData.get("sale_type"),
+    order_type: formData.get("order_type"),
+    customer_name: formData.get("customer_name"),
+    phone: formData.get("phone"),
+    status: formData.get("status"),
+    delivery_date: formData.get("delivery_date"),
+    delivery_fee: formData.get("delivery_fee"),
+    discount_amount: formData.get("discount_amount"),
+    payment_method: formData.get("payment_method"),
+    initial_payment_amount: formData.get("initial_payment_amount"),
+    notes: formData.get("notes"),
+    internal_notes: formData.get("internal_notes"),
+    items: parsedItems,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Pedido inválido." };
+  }
+
+  const supabase = await createClient();
+  const { data: currentSale, error: currentSaleError } = await supabase
+    .from("sales")
+    .select("id, status, stock_deducted, paid_amount")
+    .eq("id", id)
+    .single();
+
+  if (currentSaleError || !currentSale) {
+    return { success: false, error: currentSaleError?.message ?? "Pedido não encontrado." };
+  }
+
+  if (currentSale.stock_deducted) {
+    return {
+      success: false,
+      error: "Pedidos com estoque já baixado não podem ser editados nesta tela. Use mudança de status e ajustes operacionais.",
+    };
+  }
+
+  if (["confirmado", "em_producao", "pronto", "entregue"].includes(parsed.data.status)) {
+    const stockValidation = await validateStockForProducts(
+      parsed.data.items.map((item) => ({
+        productId: item.product_id,
+        productName: item.product_name,
+        quantity: Number(item.quantity),
+      })),
+      "sale",
+    );
+
+    if (!stockValidation.isValid) {
+      return { success: false, error: formatStockShortageMessage(stockValidation.shortages) };
+    }
+  }
+
+  const subtotalAmount = parsed.data.items.reduce(
+    (sum, item) => sum + Number(item.quantity) * Number(item.unit_price) - Number(item.discount_amount ?? 0),
+    0,
+  );
+  const totalAmount = subtotalAmount + Number(parsed.data.delivery_fee) - Number(parsed.data.discount_amount);
+  const paidAmount = Number(currentSale.paid_amount ?? 0);
+  const pendingAmount = Math.max(totalAmount - paidAmount, 0);
+
+  if (totalAmount < paidAmount) {
+    return { success: false, error: "O total do pedido não pode ficar menor que o valor já recebido." };
+  }
+
+  const { error: updateError } = await supabase
+    .from("sales")
+    .update({
+      customer_name: parsed.data.customer_name,
+      phone: parsed.data.phone,
+      sale_type: parsed.data.sale_type,
+      order_type: parsed.data.order_type,
+      status: parsed.data.status,
+      delivery_date: parsed.data.delivery_date,
+      subtotal_amount: subtotalAmount,
+      discount_amount: parsed.data.discount_amount,
+      delivery_fee: parsed.data.delivery_fee,
+      total_amount: totalAmount,
+      paid_amount: paidAmount,
+      pending_amount: pendingAmount,
+      payment_method: parsed.data.payment_method,
+      notes: parsed.data.notes,
+      internal_notes: parsed.data.internal_notes,
+    })
+    .eq("id", id);
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  const { error: deleteItemsError } = await supabase.from("sale_items").delete().eq("sale_id", id);
+  if (deleteItemsError) {
+    return { success: false, error: deleteItemsError.message };
+  }
+
+  const { error: insertItemsError } = await supabase.from("sale_items").insert(
+    parsed.data.items.map((item) => ({
+      sale_id: id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      discount_amount: item.discount_amount,
+      total_price: item.total_price,
+      notes: item.notes,
+    })),
+  );
+
+  if (insertItemsError) {
+    return { success: false, error: insertItemsError.message };
+  }
+
+  if (currentSale.status !== parsed.data.status) {
+    await supabase.from("order_status_history").insert({
+      sale_id: id,
+      old_status: currentSale.status,
+      new_status: parsed.data.status,
+      notes: "Status ajustado na edição do pedido",
+    });
+  }
+
+  await syncReceivableForSale({
+    saleId: id,
+    customerName: parsed.data.customer_name,
+    dueDate: parsed.data.delivery_date,
+    totalAmount,
+    receivedAmount: paidAmount,
+    notes: parsed.data.notes,
+  });
+
+  await ensureProductionOrderForSale(id);
+
+  revalidatePath("/vendas");
+  revalidatePath("/dashboard");
+  revalidatePath("/producao");
+  revalidatePath("/caixa");
 
   return { success: true };
 }
@@ -253,6 +469,42 @@ export async function updateSaleStatusAction(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const { data: saleRecord, error: saleError } = await supabase
+    .from("sales")
+    .select("id, stock_deducted")
+    .eq("id", parsed.data.sale_id)
+    .single();
+
+  if (saleError || !saleRecord) {
+    return { success: false, error: saleError?.message ?? "Pedido não encontrado." };
+  }
+
+  if (["confirmado", "em_producao", "pronto", "entregue"].includes(parsed.data.status) && !saleRecord.stock_deducted) {
+    const { data: saleItems, error: itemsError } = await supabase
+      .from("sale_items")
+      .select("product_id, product_name, quantity")
+      .eq("sale_id", parsed.data.sale_id);
+
+    if (itemsError) {
+      return { success: false, error: itemsError.message };
+    }
+
+    const stockValidation = await validateStockForProducts(
+      (saleItems ?? [])
+        .filter((item) => item.product_id)
+        .map((item) => ({
+          productId: String(item.product_id),
+          productName: String(item.product_name ?? ""),
+          quantity: Number(item.quantity ?? 0),
+        })),
+      "sale",
+    );
+
+    if (!stockValidation.isValid) {
+      return { success: false, error: formatStockShortageMessage(stockValidation.shortages) };
+    }
+  }
+
   const { error } = await supabase
     .from("sales")
     .update({
@@ -268,6 +520,9 @@ export async function updateSaleStatusAction(formData: FormData) {
   revalidatePath("/vendas");
   revalidatePath("/dashboard");
   revalidatePath("/estoque");
+  revalidatePath("/producao");
+
+  await ensureProductionOrderForSale(parsed.data.sale_id);
 
   return { success: true };
 }

@@ -6,6 +6,8 @@ export const productSchema = z.object({
   description: z.string().optional(),
   sale_price: z.coerce.number().min(0),
   estimated_cost: z.coerce.number().min(0).default(0),
+  finished_stock_quantity: z.coerce.number().min(0).default(0),
+  minimum_finished_stock: z.coerce.number().min(0).default(0),
   yield_quantity: z.coerce.number().min(0).default(1),
   unit: z.string().min(1, "Informe a unidade."),
   notes: z.string().optional(),

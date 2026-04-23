@@ -26,6 +26,7 @@ export async function getSalesPageData() {
           internal_notes,
           delivery_date,
           fiscal_status,
+          stock_deducted,
           sale_items (
             id,
             product_id,
@@ -57,7 +58,7 @@ export async function getSalesPageData() {
     safeQuery<ProductRow[]>(
       supabase
         .from("products")
-        .select("id, name, sale_price, estimated_cost, is_active, fulfillment_type, unit")
+        .select("id, name, sale_price, estimated_cost, finished_stock_quantity, minimum_finished_stock, is_active, fulfillment_type, unit")
         .eq("is_active", true)
         .order("name"),
       [],

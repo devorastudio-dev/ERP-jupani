@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { addSalePaymentAction, updateSaleStatusAction } from "@/features/sales/actions";
+import { SaleFormDialog } from "@/features/sales/components/sale-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { SaleSummaryRow } from "@/types/entities";
+import type { CashSessionRow, ProductRow, SaleSummaryRow } from "@/types/entities";
 
 const statusOptions = [
   { value: "orcamento", label: "Orçamento" },
@@ -23,7 +24,15 @@ const statusOptions = [
   { value: "cancelado", label: "Cancelado" },
 ];
 
-export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
+export function SalesList({
+  sales,
+  products,
+  openCashSession,
+}: {
+  sales: SaleSummaryRow[];
+  products: ProductRow[];
+  openCashSession: CashSessionRow | null;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -66,6 +75,9 @@ export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
                     <p className="text-lg font-semibold text-stone-900">{sale.customer_name || "Cliente não informado"}</p>
                     <Badge>{String(sale.status).replaceAll("_", " ")}</Badge>
                     <Badge variant="muted">{sale.fiscal_status ?? "nao_emitido"}</Badge>
+                    <Badge variant={sale.stock_deducted ? "success" : "warning"}>
+                      {sale.stock_deducted ? "Estoque baixado" : "Aguardando baixa"}
+                    </Badge>
                   </div>
                   <p className="mt-2 text-sm text-stone-500">
                     {sale.sale_type} • {sale.order_type} • entrega {formatDate(sale.delivery_date)}
@@ -85,6 +97,9 @@ export function SalesList({ sales }: { sales: SaleSummaryRow[] }) {
                     <p className="text-xs text-stone-500">Pendente</p>
                     <p className="font-semibold text-stone-900">{formatCurrency(Number(sale.pending_amount ?? 0))}</p>
                   </div>
+                </div>
+                <div className="flex justify-end">
+                  <SaleFormDialog sale={sale} products={products} openCashSession={openCashSession} />
                 </div>
               </div>
 

@@ -40,7 +40,7 @@ export default async function RecipesPage() {
         </Card>
         <RecipeForm products={products} ingredients={ingredients} />
       </section>
-      <RecipeList recipes={recipes} />
+      <RecipeList recipes={recipes} products={products} ingredients={ingredients} />
     </div>
   );
 }

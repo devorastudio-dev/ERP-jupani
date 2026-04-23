@@ -4,13 +4,22 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { updateProductionOrderStatusAction } from "@/features/production/actions";
+import { ProductionOrderFormDialog } from "@/features/production/components/production-order-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
-import type { ProductionOrderRow } from "@/types/entities";
+import type { ProductRow, ProductionOrderRow, SaleSummaryRow } from "@/types/entities";
 
-export function ProductionOrdersList({ orders }: { orders: ProductionOrderRow[] }) {
+export function ProductionOrdersList({
+  orders,
+  sales,
+  products,
+}: {
+  orders: ProductionOrderRow[];
+  sales: SaleSummaryRow[];
+  products: ProductRow[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -43,6 +52,9 @@ export function ProductionOrdersList({ orders }: { orders: ProductionOrderRow[] 
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-lg font-semibold text-stone-900">Ordem {order.id.slice(0, 8)}</p>
                     <Badge>{order.status}</Badge>
+                    <Badge variant={order.stock_deducted ? "success" : "muted"}>
+                      {order.stock_deducted ? "Estoque baixado" : "Estoque pendente"}
+                    </Badge>
                   </div>
                   <p className="mt-2 text-sm text-stone-500">
                     Prazo: {order.deadline ? formatDate(order.deadline, "DD/MM/YYYY HH:mm") : "Sem prazo"}
@@ -50,6 +62,7 @@ export function ProductionOrdersList({ orders }: { orders: ProductionOrderRow[] 
                   {order.notes ? <p className="mt-2 text-sm text-stone-500">{order.notes}</p> : null}
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <ProductionOrderFormDialog order={order} sales={sales} products={products} />
                   {["pendente", "em_producao", "finalizado", "cancelado"].map((status) => (
                     <Button
                       key={status}

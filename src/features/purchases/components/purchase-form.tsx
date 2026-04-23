@@ -1,13 +1,13 @@
 "use client";
 /* eslint-disable react-hooks/incompatible-library */
 
-import { useMemo, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { createPurchaseAction } from "@/features/purchases/actions";
+import { createPurchaseAction, updatePurchaseAction } from "@/features/purchases/actions";
 import { purchaseSchema } from "@/features/purchases/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,15 +15,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/utils";
-import type { IngredientRow, SupplierRow } from "@/types/entities";
+import type { IngredientRow, PurchaseRow, SupplierRow } from "@/types/entities";
+
+const purchaseStatusOptions = ["rascunho", "aprovada", "recebida", "cancelada"] as const;
+
+interface PurchaseFormProps {
+  suppliers: SupplierRow[];
+  ingredients: IngredientRow[];
+  purchase?: PurchaseRow | null;
+  onSuccess?: () => void;
+}
 
 export function PurchaseForm({
   suppliers,
   ingredients,
-}: {
-  suppliers: SupplierRow[];
-  ingredients: IngredientRow[];
-}) {
+  purchase,
+  onSuccess,
+}: PurchaseFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const {
@@ -54,6 +62,28 @@ export function PurchaseForm({
   const suppliersMap = useMemo(() => new Map(suppliers.map((item) => [item.id, item])), [suppliers]);
   const total = items.reduce((sum, item) => sum + Number(item.total_cost ?? 0), 0);
 
+  useEffect(() => {
+    reset({
+      supplier_id: purchase?.supplier_id ?? "",
+      supplier_name: purchase?.supplier_name ?? "",
+      purchase_date: purchase?.purchase_date ?? new Date().toISOString().slice(0, 10),
+      status: purchaseStatusOptions.includes((purchase?.status ?? "rascunho") as (typeof purchaseStatusOptions)[number])
+        ? ((purchase?.status ?? "rascunho") as (typeof purchaseStatusOptions)[number])
+        : "rascunho",
+      payment_method: purchase?.payment_method ?? "",
+      notes: purchase?.notes ?? "",
+      generate_payable: purchase?.generate_payable ?? true,
+      items:
+        purchase?.purchase_items?.map((item) => ({
+          ingredient_id: item.ingredient_id ?? "",
+          ingredient_name: item.ingredient_name,
+          quantity: Number(item.quantity ?? 1),
+          unit_cost: Number(item.unit_cost ?? 0),
+          total_cost: Number(item.total_cost ?? 0),
+        })) ?? [{ ingredient_id: "", ingredient_name: "", quantity: 1, unit_cost: 0, total_cost: 0 }],
+    });
+  }, [purchase, reset]);
+
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
       const formData = new FormData();
@@ -66,14 +96,17 @@ export function PurchaseForm({
       formData.set("generate_payable", String(values.generate_payable));
       formData.set("items", JSON.stringify(values.items));
 
-      const result = await createPurchaseAction(formData);
+      const result = purchase?.id ? await updatePurchaseAction(purchase.id, formData) : await createPurchaseAction(formData);
       if (!result?.success) {
         toast.error(result?.error ?? "Não foi possível salvar a compra.");
         return;
       }
 
-      toast.success("Compra registrada com sucesso.");
-      reset();
+      toast.success(purchase?.id ? "Compra atualizada com sucesso." : "Compra registrada com sucesso.");
+      if (!purchase?.id) {
+        reset();
+      }
+      onSuccess?.();
       router.refresh();
     });
   });
@@ -81,7 +114,7 @@ export function PurchaseForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nova compra</CardTitle>
+        <CardTitle>{purchase?.id ? "Editar compra" : "Nova compra"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-5">
@@ -235,7 +268,7 @@ export function PurchaseForm({
           </div>
 
           <Button type="submit" disabled={pending}>
-            {pending ? "Salvando..." : "Registrar compra"}
+            {pending ? "Salvando..." : purchase?.id ? "Atualizar compra" : "Registrar compra"}
           </Button>
         </form>
       </CardContent>

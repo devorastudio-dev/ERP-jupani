@@ -45,7 +45,7 @@ export default async function SalesPage() {
         </Card>
       </section>
 
-      <SalesList sales={sales} />
+      <SalesList sales={sales} products={products} openCashSession={openCashSession} />
     </div>
   );
 }

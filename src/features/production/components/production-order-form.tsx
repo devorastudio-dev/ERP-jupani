@@ -1,28 +1,34 @@
 "use client";
 /* eslint-disable react-hooks/incompatible-library */
 
-import { useMemo, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { createProductionOrderAction } from "@/features/production/actions";
+import { createProductionOrderAction, updateProductionOrderAction } from "@/features/production/actions";
 import { productionOrderSchema } from "@/features/production/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { ProductRow, SaleSummaryRow } from "@/types/entities";
+import type { ProductRow, ProductionOrderRow, SaleSummaryRow } from "@/types/entities";
+
+interface ProductionOrderFormProps {
+  sales: SaleSummaryRow[];
+  products: ProductRow[];
+  order?: ProductionOrderRow | null;
+  onSuccess?: () => void;
+}
 
 export function ProductionOrderForm({
   sales,
   products,
-}: {
-  sales: SaleSummaryRow[];
-  products: ProductRow[];
-}) {
+  order,
+  onSuccess,
+}: ProductionOrderFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const {
@@ -48,6 +54,22 @@ export function ProductionOrderForm({
   const productsMap = useMemo(() => new Map(products.map((item) => [item.id, item])), [products]);
   const items = watch("items");
 
+  useEffect(() => {
+    reset({
+      sale_id: order?.sale_id ?? "",
+      deadline: order?.deadline ? new Date(order.deadline).toISOString().slice(0, 16) : "",
+      status: (order?.status as "pendente" | "em_producao" | "finalizado" | "cancelado") ?? "pendente",
+      notes: order?.notes ?? "",
+      items:
+        order?.production_order_items?.map((item) => ({
+          product_id: item.product_id ?? "",
+          product_name: item.product_name,
+          quantity: Number(item.quantity ?? 1),
+          notes: item.notes ?? "",
+        })) ?? [{ product_id: "", product_name: "", quantity: 1 }],
+    });
+  }, [order, reset]);
+
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
       const formData = new FormData();
@@ -57,14 +79,19 @@ export function ProductionOrderForm({
       formData.set("notes", values.notes ?? "");
       formData.set("items", JSON.stringify(values.items));
 
-      const result = await createProductionOrderAction(formData);
+      const result = order?.id
+        ? await updateProductionOrderAction(order.id, formData)
+        : await createProductionOrderAction(formData);
       if (!result?.success) {
         toast.error(result?.error ?? "Não foi possível criar a ordem.");
         return;
       }
 
-      toast.success("Ordem de produção criada.");
-      reset();
+      toast.success(order?.id ? "Ordem de produção atualizada." : "Ordem de produção criada.");
+      if (!order?.id) {
+        reset();
+      }
+      onSuccess?.();
       router.refresh();
     });
   });
@@ -72,7 +99,7 @@ export function ProductionOrderForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nova ordem de produção</CardTitle>
+        <CardTitle>{order?.id ? "Editar ordem de produção" : "Nova ordem de produção"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-5">
@@ -151,7 +178,7 @@ export function ProductionOrderForm({
           </div>
 
           <Button type="submit" disabled={pending}>
-            {pending ? "Salvando..." : "Criar ordem"}
+            {pending ? "Salvando..." : order?.id ? "Atualizar ordem" : "Criar ordem"}
           </Button>
         </form>
       </CardContent>

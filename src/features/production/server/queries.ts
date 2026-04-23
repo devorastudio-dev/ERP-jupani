@@ -13,6 +13,7 @@ export async function getProductionPageData() {
           sale_id,
           deadline,
           status,
+          stock_deducted,
           notes,
           production_order_items (
             id,
@@ -36,12 +37,15 @@ export async function getProductionPageData() {
     safeQuery<ProductRow[]>(
       supabase
         .from("products")
-        .select("id, name, sale_price, estimated_cost, is_active, fulfillment_type, unit")
+        .select("id, name, sale_price, estimated_cost, finished_stock_quantity, minimum_finished_stock, is_active, fulfillment_type, unit")
         .eq("is_active", true)
         .order("name"),
       [],
     ),
   ]);
 
-  return { orders, sales, products };
+  const salesWithOpenOrders = new Set(orders.map((order) => order.sale_id).filter(Boolean));
+  const availableSales = sales.filter((sale) => !salesWithOpenOrders.has(sale.id));
+
+  return { orders, sales: availableSales, allSales: sales, products };
 }
