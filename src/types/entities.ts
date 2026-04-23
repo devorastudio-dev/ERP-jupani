@@ -211,6 +211,7 @@ export interface PurchaseItemRow {
   ingredient_id?: string | null;
   ingredient_name: string;
   quantity: number | null;
+  purchase_unit?: string | null;
   unit_cost: number | null;
   total_cost: number | null;
 }

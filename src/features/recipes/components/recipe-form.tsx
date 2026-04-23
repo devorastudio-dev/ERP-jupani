@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { areUnitsCompatible, convertQuantity, getCompatibleUnits } from "@/lib/measurement";
 import { formatCurrency } from "@/lib/utils";
 import type { IngredientRow, ProductRow, RecipeRow } from "@/types/entities";
 
@@ -38,6 +39,7 @@ export function RecipeForm({
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(recipeSchema),
@@ -79,7 +81,15 @@ export function RecipeForm({
 
   const ingredientCost = items.reduce((sum, item) => {
     const ingredient = ingredientsMap.get(item.ingredient_id);
-    return sum + Number(ingredient?.average_cost ?? 0) * Number(item.quantity ?? 0);
+    if (!ingredient) {
+      return sum;
+    }
+
+    const convertedQuantity = convertQuantity(Number(item.quantity ?? 0), item.unit, ingredient.unit);
+    const safeQuantity =
+      convertedQuantity ?? (areUnitsCompatible(item.unit, ingredient.unit) ? Number(item.quantity ?? 0) : 0);
+
+    return sum + Number(ingredient.average_cost ?? 0) * safeQuantity;
   }, 0);
 
   const totalCost = ingredientCost + Number(packagingCost) + Number(additionalCost);
@@ -163,8 +173,18 @@ export function RecipeForm({
             <div className="space-y-3">
               {fields.map((field, index) => {
                 const selectedIngredient = ingredientsMap.get(items[index]?.ingredient_id);
-                const currentCost =
-                  Number(selectedIngredient?.average_cost ?? 0) * Number(items[index]?.quantity ?? 0);
+                const unitOptions = getCompatibleUnits(selectedIngredient?.unit ?? items[index]?.unit ?? "g");
+                const convertedQuantity =
+                  selectedIngredient && items[index]?.unit
+                    ? convertQuantity(Number(items[index]?.quantity ?? 0), items[index]?.unit, selectedIngredient.unit)
+                    : null;
+                const hasUnitMismatch =
+                  selectedIngredient && items[index]?.unit
+                    ? !areUnitsCompatible(items[index]?.unit, selectedIngredient.unit)
+                    : false;
+                const safeQuantity =
+                  convertedQuantity ?? (hasUnitMismatch ? 0 : Number(items[index]?.quantity ?? 0));
+                const currentCost = Number(selectedIngredient?.average_cost ?? 0) * safeQuantity;
 
                 return (
                   <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.58fr)_minmax(120px,0.58fr)_auto]">
@@ -172,6 +192,13 @@ export function RecipeForm({
                       <Label>Insumo</Label>
                       <select
                         {...register(`items.${index}.ingredient_id`)}
+                        onChange={(event) => {
+                          const ingredient = ingredientsMap.get(event.target.value);
+                          setValue(`items.${index}.ingredient_id`, event.target.value);
+                          if (ingredient) {
+                            setValue(`items.${index}.unit`, ingredient.unit);
+                          }
+                        }}
                         className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
                       >
                         <option value="">Selecione</option>
@@ -184,7 +211,16 @@ export function RecipeForm({
                     </div>
                     <div className="space-y-2">
                       <Label>Unidade</Label>
-                      <Input {...register(`items.${index}.unit`)} />
+                      <select
+                        {...register(`items.${index}.unit`)}
+                        className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
+                      >
+                        {unitOptions.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="space-y-2">
                       <Label>Quantidade</Label>
@@ -194,6 +230,15 @@ export function RecipeForm({
                       <div className="text-left xl:text-right">
                         <p className="text-xs text-stone-500">Custo</p>
                         <p className="text-sm font-semibold text-stone-800">{formatCurrency(currentCost)}</p>
+                        {selectedIngredient ? (
+                          <p className={`mt-1 text-xs ${hasUnitMismatch ? "text-red-600" : "text-stone-500"}`}>
+                            {hasUnitMismatch
+                              ? `Unidade incompatível com o insumo base em ${selectedIngredient.unit}.`
+                              : convertedQuantity !== null
+                                ? `${Number(items[index]?.quantity ?? 0)} ${items[index]?.unit} viram ${convertedQuantity.toFixed(3)} ${selectedIngredient.unit}.`
+                                : `Custo base em ${selectedIngredient.unit}.`}
+                          </p>
+                        ) : null}
                       </div>
                       <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                         <Trash2 className="h-4 w-4" />

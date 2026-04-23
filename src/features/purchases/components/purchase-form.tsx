@@ -14,6 +14,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  areUnitsCompatible,
+  convertQuantity,
+  convertUnitCost,
+  getCompatibleUnits,
+} from "@/lib/measurement";
 import { formatCurrency } from "@/lib/utils";
 import type { IngredientRow, PurchaseRow, SupplierRow } from "@/types/entities";
 
@@ -48,7 +54,7 @@ export function PurchaseForm({
       purchase_date: new Date().toISOString().slice(0, 10),
       status: "rascunho",
       generate_payable: true,
-      items: [{ ingredient_id: "", ingredient_name: "", quantity: 1, unit_cost: 0, total_cost: 0 }],
+      items: [{ ingredient_id: "", ingredient_name: "", quantity: 1, purchase_unit: "", unit_cost: 0, total_cost: 0 }],
     },
   });
 
@@ -78,11 +84,12 @@ export function PurchaseForm({
           ingredient_id: item.ingredient_id ?? "",
           ingredient_name: item.ingredient_name,
           quantity: Number(item.quantity ?? 1),
+          purchase_unit: item.purchase_unit ?? ingredientsMap.get(item.ingredient_id ?? "")?.unit ?? "",
           unit_cost: Number(item.unit_cost ?? 0),
           total_cost: Number(item.total_cost ?? 0),
-        })) ?? [{ ingredient_id: "", ingredient_name: "", quantity: 1, unit_cost: 0, total_cost: 0 }],
+        })) ?? [{ ingredient_id: "", ingredient_name: "", quantity: 1, purchase_unit: "", unit_cost: 0, total_cost: 0 }],
     });
-  }, [purchase, reset]);
+  }, [ingredientsMap, purchase, reset]);
 
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
@@ -120,7 +127,7 @@ export function PurchaseForm({
         <form onSubmit={onSubmit} className="space-y-5">
           <div className="rounded-3xl border border-rose-100 bg-gradient-to-r from-[#fff8f5] to-[#fff0ee] p-4">
             <p className="text-sm font-medium text-stone-700">Resumo da compra</p>
-            <p className="mt-1 text-sm text-stone-500">Monte os itens com conforto em telas largas, sem esmagar campos numéricos.</p>
+            <p className="mt-1 text-sm text-stone-500">O sistema agora converte a unidade da compra para a unidade base do insumo ao atualizar estoque e custo.</p>
             <p className="mt-3 text-2xl font-semibold text-stone-900">{formatCurrency(total)}</p>
           </div>
           <div className="grid gap-4 xl:grid-cols-2">
@@ -176,80 +183,124 @@ export function PurchaseForm({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => append({ ingredient_id: "", ingredient_name: "", quantity: 1, unit_cost: 0, total_cost: 0 })}
+                onClick={() => append({ ingredient_id: "", ingredient_name: "", quantity: 1, purchase_unit: "", unit_cost: 0, total_cost: 0 })}
               >
                 <Plus className="h-4 w-4" />
                 Adicionar item
               </Button>
             </div>
-            {fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.55fr)_minmax(130px,0.65fr)_minmax(120px,0.65fr)_auto]">
-                <div className="space-y-2">
-                  <Label>Insumo</Label>
-                  <select
-                    {...register(`items.${index}.ingredient_id`)}
-                    onChange={(event) => {
-                      const ingredient = ingredientsMap.get(event.target.value);
-                      setValue(`items.${index}.ingredient_id`, event.target.value);
-                      setValue(`items.${index}.ingredient_name`, ingredient?.name ?? "");
-                    }}
-                    className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
-                  >
-                    <option value="">Selecione</option>
-                    {ingredients.map((ingredient) => (
-                      <option key={ingredient.id} value={ingredient.id}>
-                        {ingredient.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Qtd.</Label>
-                  <Input
-                    type="number"
-                    step="0.001"
-                    min="0.001"
-                    {...register(`items.${index}.quantity`)}
-                    onChange={(event) => {
-                      const quantity = Number(event.target.value);
-                      setValue(`items.${index}.quantity`, quantity);
-                      const unitCost = Number(items[index]?.unit_cost ?? 0);
-                      setValue(`items.${index}.total_cost`, quantity * unitCost);
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Custo unit.</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    {...register(`items.${index}.unit_cost`)}
-                    onChange={(event) => {
-                      const unitCost = Number(event.target.value);
-                      setValue(`items.${index}.unit_cost`, unitCost);
-                      const quantity = Number(items[index]?.quantity ?? 1);
-                      setValue(`items.${index}.total_cost`, quantity * unitCost);
-                    }}
-                  />
-                </div>
-                <div className="flex items-end justify-between xl:justify-start">
-                  <div>
-                    <p className="text-xs text-stone-500">Total</p>
-                    <p className="font-semibold text-stone-900">
-                      {formatCurrency(Number(items[index]?.total_cost ?? 0))}
-                    </p>
+            {fields.map((field, index) => {
+              const item = items[index];
+              const selectedIngredient = ingredientsMap.get(item?.ingredient_id);
+              const compatibleUnits = getCompatibleUnits(selectedIngredient?.unit ?? item?.purchase_unit ?? "");
+              const purchaseUnit = item?.purchase_unit ?? selectedIngredient?.unit ?? "";
+              const convertedQuantity =
+                selectedIngredient && purchaseUnit
+                  ? convertQuantity(Number(item?.quantity ?? 0), purchaseUnit, selectedIngredient.unit)
+                  : null;
+              const convertedUnitCost =
+                selectedIngredient && purchaseUnit
+                  ? convertUnitCost(Number(item?.unit_cost ?? 0), purchaseUnit, selectedIngredient.unit)
+                  : null;
+              const hasUnitMismatch =
+                selectedIngredient && purchaseUnit
+                  ? !areUnitsCompatible(purchaseUnit, selectedIngredient.unit)
+                  : false;
+
+              return (
+                <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(110px,0.45fr)_minmax(100px,0.42fr)_minmax(130px,0.6fr)_minmax(150px,0.7fr)_auto]">
+                  <div className="space-y-2">
+                    <Label>Insumo</Label>
+                    <select
+                      {...register(`items.${index}.ingredient_id`)}
+                      onChange={(event) => {
+                        const ingredient = ingredientsMap.get(event.target.value);
+                        const nextUnit = ingredient?.unit ?? "";
+                        setValue(`items.${index}.ingredient_id`, event.target.value);
+                        setValue(`items.${index}.ingredient_name`, ingredient?.name ?? "");
+                        setValue(`items.${index}.purchase_unit`, nextUnit);
+                      }}
+                      className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
+                    >
+                      <option value="">Selecione</option>
+                      {ingredients.map((ingredient) => (
+                        <option key={ingredient.id} value={ingredient.id}>
+                          {ingredient.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                  <div className="space-y-2">
+                    <Label>Qtd.</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      min="0.001"
+                      {...register(`items.${index}.quantity`)}
+                      onChange={(event) => {
+                        const quantity = Number(event.target.value);
+                        setValue(`items.${index}.quantity`, quantity);
+                        const unitCost = Number(items[index]?.unit_cost ?? 0);
+                        setValue(`items.${index}.total_cost`, quantity * unitCost);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Unid.</Label>
+                    <select
+                      {...register(`items.${index}.purchase_unit`)}
+                      className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
+                    >
+                      <option value="">Selecione</option>
+                      {compatibleUnits.map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Custo unit.</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      {...register(`items.${index}.unit_cost`)}
+                      onChange={(event) => {
+                        const unitCost = Number(event.target.value);
+                        setValue(`items.${index}.unit_cost`, unitCost);
+                        const quantity = Number(items[index]?.quantity ?? 1);
+                        setValue(`items.${index}.total_cost`, quantity * unitCost);
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-end justify-between xl:justify-start">
+                    <div>
+                      <p className="text-xs text-stone-500">Total</p>
+                      <p className="font-semibold text-stone-900">
+                        {formatCurrency(Number(item?.total_cost ?? 0))}
+                      </p>
+                      {selectedIngredient ? (
+                        <p className={`mt-1 text-xs ${hasUnitMismatch ? "text-red-600" : "text-stone-500"}`}>
+                          {hasUnitMismatch
+                            ? `Unidade incompatível com o estoque em ${selectedIngredient.unit}.`
+                            : convertedQuantity !== null && convertedUnitCost !== null
+                              ? `${Number(item?.quantity ?? 0)} ${purchaseUnit} viram ${convertedQuantity.toFixed(3)} ${selectedIngredient.unit} a ${formatCurrency(convertedUnitCost)}/${selectedIngredient.unit}.`
+                              : `Estoque base em ${selectedIngredient.unit}.`}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="flex items-end">
+                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <input type="hidden" {...register(`items.${index}.ingredient_name`)} />
+                  <input type="hidden" {...register(`items.${index}.total_cost`)} />
                 </div>
-                <div className="flex items-end">
-                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <input type="hidden" {...register(`items.${index}.ingredient_name`)} />
-                <input type="hidden" {...register(`items.${index}.total_cost`)} />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <label className="flex items-center gap-2 text-sm text-stone-600">

@@ -144,6 +144,7 @@ export async function createPurchaseAction(formData: FormData) {
     ingredient_id: item.ingredient_id,
     ingredient_name: item.ingredient_name,
     quantity: item.quantity,
+    purchase_unit: item.purchase_unit,
     unit_cost: item.unit_cost,
     total_cost: item.total_cost,
   }));
@@ -151,6 +152,16 @@ export async function createPurchaseAction(formData: FormData) {
   const { error: itemsError } = await supabase.from("purchase_items").insert(itemsPayload);
   if (itemsError) {
     return { success: false, error: itemsError.message };
+  }
+
+  if (["aprovada", "recebida"].includes(parsed.data.status)) {
+    const { error: receiptError } = await supabase.rpc("apply_purchase_receipt", {
+      target_purchase_id: purchase.id,
+    });
+
+    if (receiptError) {
+      return { success: false, error: receiptError.message };
+    }
   }
 
   await createOrUpdatePayableForPurchase({
@@ -249,6 +260,7 @@ export async function updatePurchaseAction(id: string, formData: FormData) {
       ingredient_id: item.ingredient_id,
       ingredient_name: item.ingredient_name,
       quantity: item.quantity,
+      purchase_unit: item.purchase_unit,
       unit_cost: item.unit_cost,
       total_cost: item.total_cost,
     })),

@@ -86,7 +86,7 @@ export function PurchasesList({
                     <div>
                       <p className="font-medium text-stone-800">{item.ingredient_name}</p>
                       <p className="text-xs text-stone-500">
-                        {item.quantity} x {formatCurrency(Number(item.unit_cost ?? 0))}
+                        {item.quantity} {item.purchase_unit ?? ""} x {formatCurrency(Number(item.unit_cost ?? 0))}
                       </p>
                     </div>
                     <p className="font-semibold text-stone-900">{formatCurrency(Number(item.total_cost ?? 0))}</p>

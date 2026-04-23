@@ -4,6 +4,7 @@ export const purchaseItemSchema = z.object({
   ingredient_id: z.string().uuid("Selecione um insumo."),
   ingredient_name: z.string().min(1),
   quantity: z.coerce.number().positive("A quantidade deve ser maior que zero."),
+  purchase_unit: z.string().min(1, "Informe a unidade da compra."),
   unit_cost: z.coerce.number().min(0),
   total_cost: z.coerce.number().min(0),
 });

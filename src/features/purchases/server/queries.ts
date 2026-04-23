@@ -28,6 +28,7 @@ export async function getPurchasesPageData() {
             ingredient_id,
             ingredient_name,
             quantity,
+            purchase_unit,
             unit_cost,
             total_cost
           )
