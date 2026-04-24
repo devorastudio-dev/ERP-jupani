@@ -61,7 +61,9 @@ export const CartPage = () => {
                   fill
                   className="object-cover"
                   sizes="96px"
-                  unoptimized={item.resolvedImage.startsWith("data:")}
+                  unoptimized={
+                    item.resolvedImage.startsWith("data:") || item.resolvedImage.startsWith("http")
+                  }
                 />
               </div>
               <div className="space-y-1">

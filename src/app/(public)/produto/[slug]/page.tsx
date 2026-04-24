@@ -43,7 +43,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const image = product.images[0];
-  const isDataImage = image.startsWith("data:");
+  const isUnoptimizedImage = image.startsWith("data:") || image.startsWith("http");
 
   return (
     <div className="pb-20 pt-10">
@@ -55,7 +55,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             width={640}
             height={640}
             className="h-auto w-full rounded-[32px]"
-            unoptimized={isDataImage}
+            unoptimized={isUnoptimizedImage}
           />
         </div>
         <div className="space-y-6">

@@ -12,7 +12,7 @@ type ProductCardProps = {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const image = product.images[0];
-  const isDataImage = image.startsWith("data:");
+  const isUnoptimizedImage = image.startsWith("data:") || image.startsWith("http");
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-soft transition hover:-translate-y-1">
@@ -23,7 +23,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 33vw"
-          unoptimized={isDataImage}
+          unoptimized={isUnoptimizedImage}
         />
       </Link>
       <div className="flex flex-1 flex-col gap-4 p-5">
