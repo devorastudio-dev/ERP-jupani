@@ -25,8 +25,8 @@ export const SHIPPING_METHODS: {
   },
 ];
 
-const BASE_DELIVERY_FEE = 400;
-const EXTENDED_AREA_FEE = 600;
+const BASE_DELIVERY_FEE = 4;
+const EXTENDED_AREA_FEE = 6;
 
 const EXTENDED_AREA_KEYWORDS = [
   "zona rural",

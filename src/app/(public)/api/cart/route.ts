@@ -23,7 +23,7 @@ const addSchema = z.object({
   name: z.string(),
   slug: z.string(),
   image: z.string().optional().nullable(),
-  unitPrice: z.number().int().nonnegative(),
+  unitPrice: z.number().nonnegative(),
   quantity: z.number().int().positive(),
   itemNotes: z.string().optional().nullable(),
 });

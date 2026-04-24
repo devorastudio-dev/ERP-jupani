@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Container } from "@/features/storefront/components/layout/container";
 import { SectionHeader } from "@/features/storefront/components/sections/section-header";
+import sobreImg from "../../../../public/images/sobre.jpeg";
 
 export const metadata: Metadata = {
   title: "Sobre",
@@ -33,16 +35,18 @@ export default function SobrePage() {
             <p className="text-base text-[#7b3b30]">
               Hoje trabalhamos com pequenos lotes, ingredientes frescos e um
               cuidado artesanal em cada etapa. Nosso ateliê é um espaço de
-              criatividade, afeto e escuta, tudo para que você se sinta em
+              criatividade, afeto e escuta — tudo para que você se sinta em
               casa.
             </p>
           </div>
           <div className="rounded-[40px] bg-white p-4 shadow-soft">
-            <div className="flex h-full min-h-[360px] items-end rounded-[32px] bg-[radial-gradient(circle_at_top,_#fffaf6_0%,_#f4d5c8_45%,_#ebbca8_100%)] p-8">
-              <div className="rounded-3xl bg-white/85 p-6 text-sm text-[#7b3b30] shadow-sm">
-                Receitas autorais, produção artesanal e um atendimento próximo para celebrar cada encomenda.
-              </div>
-            </div>
+            <Image
+              src={sobreImg}
+              alt="Ateliê Ju.pani"
+              width={520}
+              height={520}
+              className="h-auto w-full rounded-4xl"
+            />
           </div>
         </Container>
       </section>

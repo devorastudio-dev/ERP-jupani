@@ -61,13 +61,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
             <Badge>{getCategoryLabel(product.category)}</Badge>
-            <Badge variant={product.availableForOrder ? "featured" : "favorite"}>
-              {product.fulfillmentType === "pronta_entrega"
-                ? product.availableForOrder
-                  ? "Pronta entrega"
-                  : "Sem estoque"
-                : "Sob encomenda"}
-            </Badge>
+            {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
           </div>
           <div className="space-y-2">
             <h1 className="font-display text-3xl text-[#3a231c] md:text-4xl">
@@ -81,26 +75,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="grid gap-4 rounded-3xl bg-white p-5 shadow-soft">
             <div className="grid gap-2 text-sm text-[#7b3b30]">
               <p>
-                <strong className="text-[#3a231c]">Categoria:</strong> {product.category}
+                <strong className="text-[#3a231c]">Ingredientes:</strong>{" "}
+                {product.notes || "Consulte disponibilidade."}
               </p>
               <p>
-                <strong className="text-[#3a231c]">Atendimento:</strong>{" "}
-                {product.fulfillmentType === "pronta_entrega" ? "Pronta entrega" : "Sob encomenda"}
+                <strong className="text-[#3a231c]">Calorias:</strong> A definir kcal
               </p>
               <p>
-                <strong className="text-[#3a231c]">Unidade:</strong> {product.unit}
+                <strong className="text-[#3a231c]">Tempo de preparo:</strong>{" "}
+                {product.fulfillmentType === "pronta_entrega" ? "Pronto para entrega" : "Sob encomenda"}
               </p>
               <p>
-                <strong className="text-[#3a231c]">Disponibilidade:</strong>{" "}
-                {product.availableForOrder
-                  ? "Disponível para pedido"
-                  : "Indisponível no momento"}
+                <strong className="text-[#3a231c]">Rendimento:</strong> {product.unit}
               </p>
-              {product.notes && (
-                <p>
-                  <strong className="text-[#3a231c]">Observações:</strong> {product.notes}
-                </p>
-              )}
+              <p>
+                <strong className="text-[#3a231c]">Variações:</strong> Consulte disponibilidade.
+              </p>
             </div>
           </div>
           <ProductDetailActions

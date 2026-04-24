@@ -11,11 +11,13 @@ import type { ProductCardData } from "@/features/storefront/lib/types";
 import { getStorefrontCategories } from "@/features/storefront/server/queries";
 
 export const metadata: Metadata = {
-  title: "Cardápio",
-  description: "Explore o cardápio Ju.pani com dados reais do sistema administrativo.",
+  title: "Pedidos",
+  description:
+    "Explore o catálogo Ju.pani com busca, filtros e os sabores mais amados.",
   openGraph: {
-    title: "Cardápio",
-    description: "Explore o cardápio Ju.pani com dados reais do sistema administrativo.",
+    title: "Pedidos",
+    description:
+      "Explore o catálogo Ju.pani com busca, filtros e os sabores mais amados.",
     url: "/cardapio",
   },
 };

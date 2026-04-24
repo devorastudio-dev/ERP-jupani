@@ -15,19 +15,28 @@ const normalizeCartImage = (image?: string | null) => {
   return image;
 };
 
+const normalizeLegacyUnitPrice = (unitPrice: number) => {
+  if (Number.isInteger(unitPrice) && unitPrice >= 1000) {
+    return unitPrice / 100;
+  }
+
+  return unitPrice;
+};
+
 const cartItemSchema = z
   .object({
     productId: z.string(),
     name: z.string(),
     slug: z.string(),
     image: z.string().nullable().optional().default(null),
-    unitPrice: z.number().int().nonnegative(),
+    unitPrice: z.number().nonnegative(),
     quantity: z.number().int().positive(),
     itemNotes: z.string().nullable().optional(),
   })
   .transform((item) => ({
     ...item,
     image: normalizeCartImage(item.image ?? null),
+    unitPrice: normalizeLegacyUnitPrice(item.unitPrice),
   }));
 
 const cartSchema = z.object({

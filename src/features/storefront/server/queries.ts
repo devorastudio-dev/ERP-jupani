@@ -48,10 +48,21 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const buildFallbackImage = (name: string, category: string) => {
-  const label = encodeURIComponent(name);
-  const categoryLabel = encodeURIComponent(category);
-  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23fff4ec"/><stop offset="100%" stop-color="%23f3c6b1"/></linearGradient></defs><rect width="720" height="720" rx="56" fill="url(%23g)"/><circle cx="570" cy="150" r="120" fill="%23ffffff" opacity="0.55"/><circle cx="120" cy="610" r="150" fill="%23f8ddcf" opacity="0.8"/><text x="64" y="520" font-size="54" font-family="Arial, sans-serif" font-weight="700" fill="%233a231c">${label}</text><text x="64" y="585" font-size="28" font-family="Arial, sans-serif" fill="%237b3b30">${categoryLabel}</text><text x="64" y="645" font-size="24" font-family="Arial, sans-serif" fill="%237b3b30">Ju.pani</text></svg>`;
+const FALLBACK_IMAGES = [
+  { match: ["bolo"], image: "/images/products/bolo-red-velvet.svg" },
+  { match: ["doce", "brigadeiro"], image: "/images/products/brigadeiro-gourmet.svg" },
+  { match: ["torta"], image: "/images/products/torta-limao.svg" },
+  { match: ["kit"], image: "/images/products/kit-festa.svg" },
+  { match: ["salgado", "quiche"], image: "/images/products/quiche-alho-poro.svg" },
+];
+
+const buildFallbackImage = (category: string) => {
+  const normalizedCategory = normalizeText(category);
+  return (
+    FALLBACK_IMAGES.find((item) =>
+      item.match.some((term) => normalizedCategory.includes(term))
+    )?.image ?? "/images/products/brownie-belga.svg"
+  );
 };
 
 export const buildProductSlug = (id: string, name: string) =>
@@ -59,7 +70,7 @@ export const buildProductSlug = (id: string, name: string) =>
 
 const mapProduct = (row: StorefrontProductRow): ProductCardData => {
   const categoryLabel = row.categories?.name?.trim() || "Sem categoria";
-  const image = row.photo_path?.trim() || buildFallbackImage(row.name, categoryLabel);
+  const image = row.photo_path?.trim() || buildFallbackImage(categoryLabel);
   const availableForOrder =
     row.is_active &&
     (row.fulfillment_type === "sob_encomenda" || Number(row.finished_stock_quantity ?? 0) > 0);

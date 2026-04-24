@@ -13,12 +13,6 @@ type ProductCardProps = {
 export const ProductCard = ({ product }: ProductCardProps) => {
   const image = product.images[0];
   const isDataImage = image.startsWith("data:");
-  const inventoryBadge =
-    product.fulfillmentType === "pronta_entrega"
-      ? product.availableForOrder
-        ? "Pronta entrega"
-        : "Sem estoque"
-      : "Sob encomenda";
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-soft transition hover:-translate-y-1">
@@ -35,9 +29,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex flex-wrap gap-2">
           <Badge>{getCategoryLabel(product.category)}</Badge>
-          <Badge variant={product.availableForOrder ? "featured" : "favorite"}>
-            {inventoryBadge}
-          </Badge>
+          {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
         </div>
         <div className="space-y-2">
           <Link href={`/produto/${product.slug}`}>
