@@ -10,12 +10,12 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-transparent">
-      <div className="flex min-h-screen">
+    <div className="h-screen overflow-hidden bg-transparent">
+      <div className="flex h-screen">
         <AppSidebar profile={profile} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <AppHeader profile={profile} />
-          <main className="flex-1 px-4 py-5 md:px-8 md:py-8">
+          <main className="flex-1 overflow-y-auto px-4 py-5 md:px-8 md:py-8">
             <div className="mx-auto w-full max-w-[1600px]">{children}</div>
           </main>
         </div>

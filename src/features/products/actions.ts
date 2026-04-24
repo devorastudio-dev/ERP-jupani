@@ -1,9 +1,14 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { productSchema } from "@/features/products/schema";
 import { categorySchema } from "@/features/recipes/schema";
 import { createClient } from "@/server/supabase/server";
+
+const PRODUCT_IMAGES_BUCKET = "product-images";
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function normalizeProductPayload(values: ReturnType<typeof productSchema.parse>) {
   return {
@@ -13,6 +18,51 @@ function normalizeProductPayload(values: ReturnType<typeof productSchema.parse>)
     notes: values.notes?.trim() || null,
     photo_path: values.photo_path?.trim() || null,
   };
+}
+
+function getImageExtension(file: File) {
+  const filenameExtension = file.name.split(".").pop()?.trim().toLowerCase();
+  if (filenameExtension && /^[a-z0-9]+$/.test(filenameExtension)) {
+    return filenameExtension;
+  }
+
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+  return "jpg";
+}
+
+async function uploadProductImage(file: File) {
+  if (!file.size) {
+    return null;
+  }
+
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error("Envie uma imagem JPG, PNG ou WEBP.");
+  }
+
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error("A imagem deve ter no máximo 5 MB.");
+  }
+
+  const supabase = await createClient();
+  const extension = getImageExtension(file);
+  const objectPath = `products/${randomUUID()}.${extension}`;
+  const bytes = Buffer.from(await file.arrayBuffer());
+
+  const { error: uploadError } = await supabase.storage
+    .from(PRODUCT_IMAGES_BUCKET)
+    .upload(objectPath, bytes, {
+      cacheControl: "3600",
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw new Error(uploadError.message);
+  }
+
+  const { data } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(objectPath);
+  return data.publicUrl;
 }
 
 export async function createProductAction(formData: FormData) {
@@ -39,8 +89,22 @@ export async function createProductAction(formData: FormData) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Produto inválido." };
   }
 
+  const uploadedPhoto = formData.get("uploaded_photo");
+  let uploadedPhotoUrl: string | null = null;
+
+  try {
+    if (uploadedPhoto instanceof File && uploadedPhoto.size > 0) {
+      uploadedPhotoUrl = await uploadProductImage(uploadedPhoto);
+    }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Não foi possível enviar a imagem." };
+  }
+
   const supabase = await createClient();
-  const payload = normalizeProductPayload(parsed.data);
+  const payload = normalizeProductPayload({
+    ...parsed.data,
+    photo_path: uploadedPhotoUrl ?? parsed.data.photo_path,
+  });
   const { error } = await supabase.from("products").insert(payload);
 
   if (error) {
@@ -79,8 +143,22 @@ export async function updateProductAction(id: string, formData: FormData) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Produto inválido." };
   }
 
+  const uploadedPhoto = formData.get("uploaded_photo");
+  let uploadedPhotoUrl: string | null = null;
+
+  try {
+    if (uploadedPhoto instanceof File && uploadedPhoto.size > 0) {
+      uploadedPhotoUrl = await uploadProductImage(uploadedPhoto);
+    }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Não foi possível enviar a imagem." };
+  }
+
   const supabase = await createClient();
-  const payload = normalizeProductPayload(parsed.data);
+  const payload = normalizeProductPayload({
+    ...parsed.data,
+    photo_path: uploadedPhotoUrl ?? parsed.data.photo_path,
+  });
   const { error } = await supabase.from("products").update(payload).eq("id", id);
 
   if (error) {

@@ -14,7 +14,7 @@ export function AppSidebar({ profile }: { profile: AuthUserProfile }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-72 shrink-0 border-r border-white/60 bg-[#fffaf7]/80 px-5 py-6 backdrop-blur lg:flex lg:flex-col">
+    <aside className="hidden h-screen w-72 shrink-0 overflow-y-auto border-r border-white/60 bg-[#fffaf7]/80 px-5 py-6 backdrop-blur lg:flex lg:flex-col">
       <div className="rounded-[2rem] bg-gradient-to-br from-rose-500 via-rose-400 to-orange-300 p-5 text-white shadow-lg shadow-rose-200/80">
         <p className="text-sm uppercase tracking-[0.3em] text-white/75">Confeitaria</p>
         <h1 className="mt-2 text-2xl font-semibold">{APP_NAME}</h1>

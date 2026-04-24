@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
@@ -18,7 +19,33 @@ export function ProductsTable({
       data={products}
       searchPlaceholder="Buscar produto"
       columns={[
-        { accessorKey: "name", header: "Produto" },
+        {
+          accessorKey: "name",
+          header: "Produto",
+          cell: ({ row }) => (
+            <div className="flex items-center gap-3">
+              <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-rose-100 bg-[#fff8f4]">
+                {row.original.photo_path?.trim() ? (
+                  <Image
+                    src={row.original.photo_path}
+                    alt={row.original.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-[10px] font-medium uppercase tracking-[0.2em] text-stone-400">
+                    Sem foto
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-stone-900">{row.original.name}</p>
+                <p className="truncate text-xs text-stone-500">{row.original.photo_path?.trim() || "Imagem padrão da vitrine"}</p>
+              </div>
+            </div>
+          ),
+        },
         {
           accessorKey: "sale_price",
           header: "Venda",

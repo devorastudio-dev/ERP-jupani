@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useTransition } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,6 +24,7 @@ interface ProductFormProps {
 export function ProductForm({ categories, product, onSuccess }: ProductFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const {
     register,
     handleSubmit,
@@ -65,10 +67,28 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
     });
   }, [product, reset]);
 
+  useEffect(() => {
+    setSelectedFile(null);
+  }, [product]);
+
   const salePrice = Number(watch("sale_price") ?? 0);
   const estimatedCost = Number(watch("estimated_cost") ?? 0);
   const grossMargin = salePrice - estimatedCost;
   const marginPercent = salePrice > 0 ? (grossMargin / salePrice) * 100 : 0;
+  const photoPath = watch("photo_path")?.trim() || "";
+  const filePreviewUrl = useMemo(
+    () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
+    [selectedFile],
+  );
+  const previewUrl = filePreviewUrl || photoPath || "";
+
+  useEffect(() => {
+    return () => {
+      if (filePreviewUrl) {
+        URL.revokeObjectURL(filePreviewUrl);
+      }
+    };
+  }, [filePreviewUrl]);
 
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
@@ -76,6 +96,9 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       Object.entries(values).forEach(([key, value]) => {
         formData.set(key, String(value ?? ""));
       });
+      if (selectedFile) {
+        formData.set("uploaded_photo", selectedFile);
+      }
 
       const result = product?.id
         ? await updateProductAction(product.id, formData)
@@ -88,6 +111,7 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       toast.success(product?.id ? "Produto atualizado com sucesso." : "Produto cadastrado com sucesso.");
       if (!product?.id) {
         reset();
+        setSelectedFile(null);
       }
       onSuccess?.();
       router.refresh();
@@ -182,6 +206,45 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="photo_path">Imagem do site</Label>
         <Input id="photo_path" placeholder="/images/products/bolo-red-velvet.svg" {...register("photo_path")} />
+        <p className="text-xs text-stone-500">
+          Você pode colar uma URL/caminho manual ou enviar uma nova imagem abaixo.
+        </p>
+      </div>
+      <div className="space-y-2 xl:col-span-2">
+        <Label htmlFor="uploaded_photo">Upload de foto</Label>
+        <Input
+          id="uploaded_photo"
+          type="file"
+          accept="image/png,image/jpeg,image/jpg,image/webp"
+          onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+        />
+        <p className="text-xs text-stone-500">
+          JPG, PNG ou WEBP com até 5 MB. Se enviar um arquivo, ele passa a valer no lugar da URL manual.
+        </p>
+      </div>
+      <div className="xl:col-span-2 rounded-3xl border border-rose-100 bg-[#fff8f4] p-4">
+        <p className="text-sm font-medium text-stone-700">Preview da imagem</p>
+        {previewUrl ? (
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-rose-100 bg-white">
+              <Image
+                src={previewUrl}
+                alt="Preview da imagem do produto"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+            <div className="space-y-1 text-sm text-stone-500">
+              <p>{selectedFile ? "Preview do arquivo selecionado" : "Imagem atualmente configurada"}</p>
+              <p className="break-all text-xs">{previewUrl}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-stone-500">
+            Nenhuma imagem definida ainda. O site usará a imagem padrão da categoria até você configurar uma.
+          </p>
+        )}
       </div>
       <label className="flex items-center gap-2 text-sm text-stone-600 xl:col-span-2">
         <input type="checkbox" value="true" {...register("is_active")} />
