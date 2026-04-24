@@ -39,6 +39,16 @@ export function IngredientsTable({
           cell: ({ row }) => formatCurrency(Number(row.original.average_cost ?? 0)),
         },
         {
+          id: "nutrition",
+          header: "Nutrição",
+          cell: ({ row }) => (
+            <span>
+              {Number(row.original.kcal_amount ?? 0).toFixed(0)} kcal / {Number(row.original.nutrition_quantity ?? 0)}{" "}
+              {row.original.nutrition_unit ?? "-"}
+            </span>
+          ),
+        },
+        {
           accessorKey: "categories",
           header: "Categoria",
           cell: ({ row }) => row.original.categories?.name ?? "-",

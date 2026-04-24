@@ -13,6 +13,9 @@ export async function getRecipesPageData() {
           product_id,
           product_name,
           theoretical_cost,
+          estimated_servings,
+          estimated_kcal_total,
+          estimated_kcal_per_serving,
           packaging_cost,
           additional_cost,
           notes,
@@ -24,7 +27,10 @@ export async function getRecipesPageData() {
             calculated_cost,
             ingredients (
               name,
-              unit
+              unit,
+              nutrition_quantity,
+              nutrition_unit,
+              kcal_amount
             )
           )
         `)
@@ -34,7 +40,7 @@ export async function getRecipesPageData() {
     safeQuery<ProductRow[]>(
       supabase
         .from("products")
-        .select("id, name, unit, estimated_cost")
+        .select("id, name, unit, yield_quantity, serving_reference_quantity, serving_reference_unit, estimated_cost, estimated_servings, estimated_kcal_total, estimated_kcal_per_serving")
         .eq("is_active", true)
         .order("name"),
       [],
@@ -42,7 +48,7 @@ export async function getRecipesPageData() {
     safeQuery<IngredientRow[]>(
       supabase
         .from("ingredients")
-        .select("id, name, unit, average_cost, stock_quantity")
+        .select("id, name, unit, average_cost, stock_quantity, nutrition_quantity, nutrition_unit, kcal_amount")
         .order("name"),
       [],
     ),

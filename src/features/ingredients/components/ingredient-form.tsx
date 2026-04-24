@@ -37,6 +37,9 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
       stock_quantity: 0,
       minimum_stock: 0,
       average_cost: 0,
+      nutrition_quantity: 100,
+      nutrition_unit: "",
+      kcal_amount: 0,
       expiration_date: "",
       notes: "",
     },
@@ -50,6 +53,9 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
       stock_quantity: Number(ingredient?.stock_quantity ?? 0),
       minimum_stock: Number(ingredient?.minimum_stock ?? 0),
       average_cost: Number(ingredient?.average_cost ?? 0),
+      nutrition_quantity: Number(ingredient?.nutrition_quantity ?? 100),
+      nutrition_unit: ingredient?.nutrition_unit ?? ingredient?.unit ?? "",
+      kcal_amount: Number(ingredient?.kcal_amount ?? 0),
       expiration_date: ingredient?.expiration_date ?? "",
       notes: ingredient?.notes ?? "",
     });
@@ -58,6 +64,9 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
   const currentStock = Number(watch("stock_quantity") ?? 0);
   const minimumStock = Number(watch("minimum_stock") ?? 0);
   const averageCost = Number(watch("average_cost") ?? 0);
+  const nutritionQuantity = Number(watch("nutrition_quantity") ?? 0);
+  const nutritionUnit = String(watch("nutrition_unit") ?? "");
+  const kcalAmount = Number(watch("kcal_amount") ?? 0);
   const stockValue = currentStock * averageCost;
 
   const onSubmit = handleSubmit((values) => {
@@ -84,6 +93,9 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
           stock_quantity: 0,
           minimum_stock: 0,
           average_cost: 0,
+          nutrition_quantity: 100,
+          nutrition_unit: "",
+          kcal_amount: 0,
           expiration_date: "",
           notes: "",
         });
@@ -97,7 +109,7 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
     <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
       <div className="rounded-3xl border border-rose-100 bg-gradient-to-r from-[#fff9f6] to-[#fff1f0] p-4 md:col-span-2">
         <p className="text-sm font-medium text-stone-700">Resumo rápido</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <div className="mt-3 grid gap-3 sm:grid-cols-4">
           <div className="rounded-2xl bg-white/80 p-3">
             <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Estoque atual</p>
             <p className="mt-1 text-lg font-semibold text-stone-900">{currentStock.toFixed(3)}</p>
@@ -110,6 +122,13 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
             <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Valor em estoque</p>
             <p className="mt-1 text-lg font-semibold text-stone-900">
               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(stockValue)}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white/80 p-3">
+            <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Base nutricional</p>
+            <p className="mt-1 text-lg font-semibold text-stone-900">{kcalAmount.toFixed(0)} kcal</p>
+            <p className="text-xs text-stone-500">
+              por {nutritionQuantity || 0} {nutritionUnit || "-"}
             </p>
           </div>
         </div>
@@ -149,6 +168,21 @@ export function IngredientForm({ categories, ingredient, onSuccess }: Ingredient
       <div className="space-y-2">
         <Label htmlFor="average_cost">Custo médio</Label>
         <Input id="average_cost" type="number" step="0.01" min="0" {...register("average_cost")} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="nutrition_quantity">Quantidade-base nutricional</Label>
+        <Input id="nutrition_quantity" type="number" step="0.001" min="0.001" {...register("nutrition_quantity")} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="nutrition_unit">Unidade-base nutricional</Label>
+        <Input id="nutrition_unit" placeholder="g, ml, un" {...register("nutrition_unit")} />
+      </div>
+      <div className="space-y-2 md:col-span-2">
+        <Label htmlFor="kcal_amount">Calorias da quantidade-base</Label>
+        <Input id="kcal_amount" type="number" step="0.01" min="0" {...register("kcal_amount")} />
+        <p className="text-xs text-stone-500">
+          Exemplo: 364 kcal por 100 g, ou 72 kcal por 1 un.
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="expiration_date">Validade</Label>

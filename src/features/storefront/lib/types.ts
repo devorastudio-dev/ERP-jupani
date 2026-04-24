@@ -11,6 +11,10 @@ export type ProductCardData = {
   fulfillmentType: "sob_encomenda" | "pronta_entrega";
   unit: string;
   stockQuantity: number;
+  estimatedServings?: number;
+  estimatedKcalTotal?: number;
+  estimatedKcalPerServing?: number;
+  displayIngredients?: string | null;
   notes?: string | null;
   availableForOrder: boolean;
 };

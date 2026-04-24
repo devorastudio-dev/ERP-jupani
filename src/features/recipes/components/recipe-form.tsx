@@ -8,6 +8,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { createRecipeAction, updateRecipeAction } from "@/features/recipes/actions";
+import { calculateRecipeNutrition } from "@/features/recipes/lib/nutrition";
 import { recipeSchema } from "@/features/recipes/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +59,7 @@ export function RecipeForm({
   const items = watch("items");
   const packagingCost = watch("packaging_cost") ?? 0;
   const additionalCost = watch("additional_cost") ?? 0;
+  const selectedProductId = watch("product_id");
 
   const ingredientsMap = useMemo(
     () => new Map(ingredients.map((ingredient) => [ingredient.id, ingredient])),
@@ -93,6 +95,20 @@ export function RecipeForm({
   }, 0);
 
   const totalCost = ingredientCost + Number(packagingCost) + Number(additionalCost);
+  const selectedProduct = products.find((product) => product.id === selectedProductId);
+  const nutritionPreview = calculateRecipeNutrition({
+    items: items.map((item) => ({
+      ingredient_id: item.ingredient_id,
+      unit: item.unit,
+      quantity: Number(item.quantity ?? 0),
+    })),
+    ingredientsMap,
+    yieldQuantity: Number(selectedProduct?.yield_quantity ?? 0),
+    yieldUnit: selectedProduct?.unit,
+    panShapeCode: selectedProduct?.pan_shape_code,
+    servingReferenceQuantity: Number(selectedProduct?.serving_reference_quantity ?? 0),
+    servingReferenceUnit: selectedProduct?.serving_reference_unit,
+  });
 
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
@@ -261,6 +277,17 @@ export function RecipeForm({
             <p className="mt-2 text-2xl font-semibold text-stone-900">{formatCurrency(totalCost)}</p>
             <p className="mt-1 text-xs text-stone-500">
               O banco recalcula o custo teórico oficial após salvar os itens da ficha técnica.
+            </p>
+          </div>
+          <div className="rounded-2xl bg-[#fff8f4] p-4">
+            <p className="text-sm text-stone-500">Nutrição estimada em tela</p>
+            <p className="mt-2 text-2xl font-semibold text-stone-900">
+              {nutritionPreview.estimatedKcalTotal.toFixed(0)} kcal totais
+            </p>
+            <p className="mt-1 text-xs text-stone-500">
+              {nutritionPreview.estimatedServings > 0
+                ? `${nutritionPreview.estimatedServings.toFixed(1)} pessoas · ${nutritionPreview.estimatedKcalPerServing.toFixed(0)} kcal por porção`
+                : "Defina rendimento e consumo por pessoa no produto para calcular as porções."}
             </p>
           </div>
 

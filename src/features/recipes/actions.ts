@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/server/supabase/server";
+import { recalculateRecipeAndProductMetrics } from "@/features/recipes/server/recalculate-metrics";
 import { recipeSchema } from "@/features/recipes/schema";
 
 export async function createRecipeAction(formData: FormData) {
@@ -73,9 +74,12 @@ export async function createRecipeAction(formData: FormData) {
     return { success: false, error: itemsError.message };
   }
 
+  await recalculateRecipeAndProductMetrics(recipe.id);
+
   revalidatePath("/fichas-tecnicas");
   revalidatePath("/produtos");
   revalidatePath("/dashboard");
+  revalidatePath("/cardapio");
 
   return { success: true };
 }
@@ -145,9 +149,12 @@ export async function updateRecipeAction(id: string, formData: FormData) {
     return { success: false, error: itemsError.message };
   }
 
+  await recalculateRecipeAndProductMetrics(id);
+
   revalidatePath("/fichas-tecnicas");
   revalidatePath("/produtos");
   revalidatePath("/dashboard");
+  revalidatePath("/cardapio");
 
   return { success: true };
 }

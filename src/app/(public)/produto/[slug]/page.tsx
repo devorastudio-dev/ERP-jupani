@@ -76,17 +76,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="grid gap-2 text-sm text-[#7b3b30]">
               <p>
                 <strong className="text-[#3a231c]">Ingredientes:</strong>{" "}
-                {product.notes || "Consulte disponibilidade."}
+                {product.displayIngredients || "Consulte disponibilidade."}
               </p>
               <p>
-                <strong className="text-[#3a231c]">Calorias:</strong> A definir kcal
+                <strong className="text-[#3a231c]">Calorias:</strong>{" "}
+                {product.estimatedKcalPerServing && product.estimatedKcalPerServing > 0
+                  ? `${product.estimatedKcalPerServing.toFixed(0)} kcal por porção`
+                  : "A definir"}
               </p>
               <p>
                 <strong className="text-[#3a231c]">Tempo de preparo:</strong>{" "}
                 {product.fulfillmentType === "pronta_entrega" ? "Pronto para entrega" : "Sob encomenda"}
               </p>
               <p>
-                <strong className="text-[#3a231c]">Rendimento:</strong> {product.unit}
+                <strong className="text-[#3a231c]">Rendimento:</strong>{" "}
+                {product.estimatedServings && product.estimatedServings > 0
+                  ? `${product.estimatedServings.toFixed(1)} pessoas`
+                  : product.unit}
               </p>
               <p>
                 <strong className="text-[#3a231c]">Variações:</strong> Consulte disponibilidade.

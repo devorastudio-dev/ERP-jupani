@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { ingredientSchema } from "@/features/ingredients/schema";
 import { categorySchema } from "@/features/recipes/schema";
+import { recalculateMetricsByIngredient } from "@/features/recipes/server/recalculate-metrics";
 import { createClient } from "@/server/supabase/server";
 
 function normalizeIngredientPayload(values: ReturnType<typeof ingredientSchema.parse>) {
   return {
     ...values,
     category_id: values.category_id || null,
+    nutrition_unit: values.nutrition_unit?.trim() || values.unit,
     expiration_date: values.expiration_date || null,
     notes: values.notes?.trim() || null,
   };
@@ -22,6 +24,9 @@ export async function createIngredientAction(formData: FormData) {
     stock_quantity: formData.get("stock_quantity"),
     minimum_stock: formData.get("minimum_stock"),
     average_cost: formData.get("average_cost"),
+    nutrition_quantity: formData.get("nutrition_quantity"),
+    nutrition_unit: formData.get("nutrition_unit"),
+    kcal_amount: formData.get("kcal_amount"),
     expiration_date: formData.get("expiration_date"),
     notes: formData.get("notes"),
   });
@@ -57,6 +62,9 @@ export async function updateIngredientAction(id: string, formData: FormData) {
     stock_quantity: formData.get("stock_quantity"),
     minimum_stock: formData.get("minimum_stock"),
     average_cost: formData.get("average_cost"),
+    nutrition_quantity: formData.get("nutrition_quantity"),
+    nutrition_unit: formData.get("nutrition_unit"),
+    kcal_amount: formData.get("kcal_amount"),
     expiration_date: formData.get("expiration_date"),
     notes: formData.get("notes"),
   });
@@ -70,9 +78,13 @@ export async function updateIngredientAction(id: string, formData: FormData) {
   const { error } = await supabase.from("ingredients").update(payload).eq("id", id);
   if (error) return { success: false, error: error.message };
 
+  await recalculateMetricsByIngredient(id);
+
   revalidatePath("/insumos");
   revalidatePath("/estoque");
   revalidatePath("/fichas-tecnicas");
+  revalidatePath("/produtos");
+  revalidatePath("/cardapio");
   return { success: true };
 }
 

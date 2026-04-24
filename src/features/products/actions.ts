@@ -3,6 +3,7 @@
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { productSchema } from "@/features/products/schema";
+import { recalculateRecipeAndProductMetrics } from "@/features/recipes/server/recalculate-metrics";
 import { categorySchema } from "@/features/recipes/schema";
 import { createClient } from "@/server/supabase/server";
 
@@ -14,6 +15,13 @@ function normalizeProductPayload(values: ReturnType<typeof productSchema.parse>)
   return {
     ...values,
     category_id: values.category_id || null,
+    pan_shape_code: values.pan_shape_code?.trim() || null,
+    serving_reference_quantity:
+      values.serving_reference_quantity && values.serving_reference_quantity > 0
+        ? values.serving_reference_quantity
+        : null,
+    serving_reference_unit: values.serving_reference_unit?.trim() || null,
+    public_ingredients_text: values.public_ingredients_text?.trim() || null,
     description: values.description?.trim() || null,
     notes: values.notes?.trim() || null,
     photo_path: values.photo_path?.trim() || null,
@@ -76,6 +84,10 @@ export async function createProductAction(formData: FormData) {
     minimum_finished_stock: formData.get("minimum_finished_stock"),
     yield_quantity: formData.get("yield_quantity"),
     unit: formData.get("unit"),
+    pan_shape_code: formData.get("pan_shape_code"),
+    serving_reference_quantity: formData.get("serving_reference_quantity"),
+    serving_reference_unit: formData.get("serving_reference_unit"),
+    public_ingredients_text: formData.get("public_ingredients_text"),
     notes: formData.get("notes"),
     photo_path: formData.get("photo_path"),
     fulfillment_type: formData.get("fulfillment_type"),
@@ -130,6 +142,10 @@ export async function updateProductAction(id: string, formData: FormData) {
     minimum_finished_stock: formData.get("minimum_finished_stock"),
     yield_quantity: formData.get("yield_quantity"),
     unit: formData.get("unit"),
+    pan_shape_code: formData.get("pan_shape_code"),
+    serving_reference_quantity: formData.get("serving_reference_quantity"),
+    serving_reference_unit: formData.get("serving_reference_unit"),
+    public_ingredients_text: formData.get("public_ingredients_text"),
     notes: formData.get("notes"),
     photo_path: formData.get("photo_path"),
     fulfillment_type: formData.get("fulfillment_type"),
@@ -163,6 +179,16 @@ export async function updateProductAction(id: string, formData: FormData) {
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("id")
+    .eq("product_id", id)
+    .maybeSingle();
+
+  if (recipe?.id) {
+    await recalculateRecipeAndProductMetrics(recipe.id);
   }
 
   revalidatePath("/produtos");

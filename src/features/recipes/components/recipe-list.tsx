@@ -28,6 +28,11 @@ export function RecipeList({
                   <p className="mt-1 text-sm text-stone-500">
                     Custo total teórico: {formatCurrency(Number(recipe.theoretical_cost ?? 0))}
                   </p>
+                  <p className="mt-1 text-sm text-stone-500">
+                    {Number(recipe.estimated_servings ?? 0) > 0
+                      ? `${Number(recipe.estimated_servings ?? 0).toFixed(1)} pessoas · ${Number(recipe.estimated_kcal_per_serving ?? 0).toFixed(0)} kcal/porção`
+                      : "Sem cálculo de porção/nutrição ainda"}
+                  </p>
                   {recipe.notes ? <p className="mt-2 text-sm text-stone-500">{recipe.notes}</p> : null}
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -36,6 +41,9 @@ export function RecipeList({
                   </Badge>
                   <Badge variant="default">
                     Adicional {formatCurrency(Number(recipe.additional_cost ?? 0))}
+                  </Badge>
+                  <Badge variant="warning">
+                    {Number(recipe.estimated_kcal_total ?? 0).toFixed(0)} kcal
                   </Badge>
                   <RecipeFormDialog recipe={recipe} products={products} ingredients={ingredients} />
                 </div>

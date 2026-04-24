@@ -18,9 +18,20 @@ const PRODUCT_SELECT = `
   fulfillment_type,
   unit,
   notes,
+  estimated_servings,
+  estimated_kcal_total,
+  estimated_kcal_per_serving,
+  public_ingredients_text,
   created_at,
   finished_stock_quantity,
-  categories:product_categories(name)
+  categories:product_categories(name),
+  recipes (
+    recipe_items (
+      ingredients (
+        name
+      )
+    )
+  )
 `;
 
 type StorefrontProductRow = {
@@ -37,9 +48,22 @@ type StorefrontProductRow = {
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   unit: string;
   notes: string | null;
+  estimated_servings: number | null;
+  estimated_kcal_total: number | null;
+  estimated_kcal_per_serving: number | null;
+  public_ingredients_text: string | null;
   created_at: string;
   finished_stock_quantity: number | null;
   categories: { name?: string | null } | null;
+  recipes:
+    | Array<{
+        recipe_items:
+          | Array<{
+              ingredients: { name?: string | null } | null;
+            }>
+          | null;
+      }>
+    | null;
 };
 
 const normalizeText = (value: string) =>
@@ -77,6 +101,16 @@ export const buildProductSlug = (id: string, name: string) =>
 const mapProduct = (row: StorefrontProductRow): ProductCardData => {
   const categoryLabel = row.categories?.name?.trim() || "Sem categoria";
   const image = row.photo_path?.trim() || buildFallbackImage(categoryLabel);
+  const autoIngredients = [
+    ...new Set(
+      (row.recipes ?? [])
+        .flatMap((recipe) => recipe.recipe_items ?? [])
+        .map((item) => item.ingredients?.name?.trim() || "")
+        .filter(Boolean),
+    ),
+  ];
+  const displayIngredients =
+    row.public_ingredients_text?.trim() || (autoIngredients.length ? autoIngredients.join(", ") : null);
   const availableForOrder =
     row.is_active &&
     row.show_on_storefront &&
@@ -95,6 +129,10 @@ const mapProduct = (row: StorefrontProductRow): ProductCardData => {
     fulfillmentType: row.fulfillment_type,
     unit: row.unit,
     stockQuantity: Number(row.finished_stock_quantity ?? 0),
+    estimatedServings: Number(row.estimated_servings ?? 0),
+    estimatedKcalTotal: Number(row.estimated_kcal_total ?? 0),
+    estimatedKcalPerServing: Number(row.estimated_kcal_per_serving ?? 0),
+    displayIngredients,
     notes: row.notes,
     availableForOrder,
   };

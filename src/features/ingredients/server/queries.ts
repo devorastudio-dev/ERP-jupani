@@ -9,7 +9,7 @@ export async function getIngredientsPageData() {
       supabase
         .from("ingredients")
         .select(
-          "id, name, category_id, unit, stock_quantity, minimum_stock, average_cost, expiration_date, notes, categories:ingredient_categories(name)",
+          "id, name, category_id, unit, stock_quantity, minimum_stock, average_cost, nutrition_quantity, nutrition_unit, kcal_amount, expiration_date, notes, categories:ingredient_categories(name)",
         )
         .order("name"),
       [],

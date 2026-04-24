@@ -16,13 +16,27 @@ export interface ProductRow {
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   unit: string;
   yield_quantity?: number | null;
+  pan_shape_code?: string | null;
+  serving_reference_quantity?: number | null;
+  serving_reference_unit?: string | null;
+  estimated_servings?: number | null;
+  estimated_kcal_total?: number | null;
+  estimated_kcal_per_serving?: number | null;
+  public_ingredients_text?: string | null;
   notes?: string | null;
   photo_path?: string | null;
   show_on_storefront?: boolean;
   is_storefront_featured?: boolean;
   is_storefront_favorite?: boolean;
   categories?: { name?: string | null } | null;
-  recipes?: Array<{ id: string; theoretical_cost?: number | null }> | null;
+  recipes?: Array<{
+    id: string;
+    theoretical_cost?: number | null;
+    recipe_items?: Array<{
+      id: string;
+      ingredients?: { name?: string | null } | null;
+    }> | null;
+  }> | null;
 }
 
 export interface IngredientRow {
@@ -33,6 +47,9 @@ export interface IngredientRow {
   stock_quantity: number | null;
   minimum_stock: number | null;
   average_cost: number | null;
+  nutrition_quantity?: number | null;
+  nutrition_unit?: string | null;
+  kcal_amount?: number | null;
   expiration_date?: string | null;
   notes?: string | null;
   categories?: { name?: string | null } | null;
@@ -52,6 +69,9 @@ export interface InventoryMovementRow {
 export interface RecipeIngredientRef {
   name?: string | null;
   unit?: string | null;
+  nutrition_quantity?: number | null;
+  nutrition_unit?: string | null;
+  kcal_amount?: number | null;
 }
 
 export interface RecipeItemRow {
@@ -68,6 +88,9 @@ export interface RecipeRow {
   product_id?: string;
   product_name: string;
   theoretical_cost: number | null;
+  estimated_servings?: number | null;
+  estimated_kcal_total?: number | null;
+  estimated_kcal_per_serving?: number | null;
   packaging_cost: number | null;
   additional_cost: number | null;
   notes?: string | null;

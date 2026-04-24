@@ -52,6 +52,24 @@ export function ProductsTable({
           cell: ({ row }) => formatCurrency(Number(row.original.sale_price ?? 0)),
         },
         {
+          id: "nutrition",
+          header: "Porções / kcal",
+          cell: ({ row }) => (
+            <div className="text-xs text-stone-600">
+              <p>
+                {Number(row.original.estimated_servings ?? 0) > 0
+                  ? `${Number(row.original.estimated_servings ?? 0).toFixed(1)} pessoas`
+                  : "Sem cálculo"}
+              </p>
+              <p>
+                {Number(row.original.estimated_kcal_per_serving ?? 0) > 0
+                  ? `${Number(row.original.estimated_kcal_per_serving ?? 0).toFixed(0)} kcal/porção`
+                  : "Sem kcal"}
+              </p>
+            </div>
+          ),
+        },
+        {
           accessorKey: "estimated_cost",
           header: "Custo",
           cell: ({ row }) => formatCurrency(Number(row.original.estimated_cost ?? 0)),

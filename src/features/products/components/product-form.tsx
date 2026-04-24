@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createProductAction, updateProductAction } from "@/features/products/actions";
+import { PAN_SHAPE_PRESETS, getPanShapePreset } from "@/features/products/lib/pan-shapes";
 import { productSchema } from "@/features/products/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,9 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       finished_stock_quantity: 0,
       minimum_finished_stock: 0,
       yield_quantity: 1,
+      pan_shape_code: "",
+      serving_reference_quantity: null,
+      serving_reference_unit: "",
       fulfillment_type: "sob_encomenda",
       is_active: true,
       show_on_storefront: true,
@@ -57,6 +61,10 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       minimum_finished_stock: Number(product?.minimum_finished_stock ?? 0),
       yield_quantity: Number(product?.yield_quantity ?? 1),
       unit: product?.unit ?? "",
+      pan_shape_code: product?.pan_shape_code ?? "",
+      serving_reference_quantity: Number(product?.serving_reference_quantity ?? 0) || null,
+      serving_reference_unit: product?.serving_reference_unit ?? "",
+      public_ingredients_text: product?.public_ingredients_text ?? "",
       notes: product?.notes ?? "",
       photo_path: product?.photo_path ?? "",
       fulfillment_type: product?.fulfillment_type ?? "sob_encomenda",
@@ -75,6 +83,10 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
   const estimatedCost = Number(watch("estimated_cost") ?? 0);
   const grossMargin = salePrice - estimatedCost;
   const marginPercent = salePrice > 0 ? (grossMargin / salePrice) * 100 : 0;
+  const estimatedServings = Number(product?.estimated_servings ?? 0);
+  const estimatedKcalPerServing = Number(product?.estimated_kcal_per_serving ?? 0);
+  const panShapeCode = String(watch("pan_shape_code") ?? "");
+  const selectedPanShape = getPanShapePreset(panShapeCode);
   const photoPath = watch("photo_path")?.trim() || "";
   const filePreviewUrl = useMemo(
     () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
@@ -121,7 +133,7 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
   return (
     <form onSubmit={onSubmit} className="grid gap-4 xl:grid-cols-2">
       <div className="rounded-3xl border border-rose-100 bg-gradient-to-r from-[#fff8f4] to-[#fff1ef] p-4 xl:col-span-2">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-4">
           <div className="rounded-2xl bg-white/80 p-3">
             <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Preço de venda</p>
             <p className="mt-1 text-lg font-semibold text-stone-900">{formatCurrency(salePrice)}</p>
@@ -134,6 +146,15 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
             <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Margem bruta</p>
             <p className={`mt-1 text-lg font-semibold ${grossMargin >= 0 ? "text-emerald-700" : "text-red-600"}`}>
               {formatCurrency(grossMargin)} ({marginPercent.toFixed(1)}%)
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white/80 p-3">
+            <p className="text-xs uppercase tracking-[0.18em] text-stone-400">Porção estimada</p>
+            <p className="mt-1 text-lg font-semibold text-stone-900">
+              {estimatedServings > 0 ? `${estimatedServings.toFixed(1)} pessoas` : "A definir"}
+            </p>
+            <p className="text-xs text-stone-500">
+              {estimatedKcalPerServing > 0 ? `${estimatedKcalPerServing.toFixed(0)} kcal/porção` : "Sem cálculo ainda"}
             </p>
           </div>
         </div>
@@ -170,6 +191,40 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
         <Input id="yield_quantity" type="number" step="0.01" min="0" {...register("yield_quantity")} />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="pan_shape_code">Tipo de forma</Label>
+        <select
+          id="pan_shape_code"
+          {...register("pan_shape_code")}
+          className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
+        >
+          <option value="">Sem padrão</option>
+          {PAN_SHAPE_PRESETS.map((preset) => (
+            <option key={preset.code} value={preset.code}>
+              {preset.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-stone-500">
+          {selectedPanShape
+            ? `Faixa padrão: ${selectedPanShape.minSlices} a ${selectedPanShape.maxSlices} fatias.`
+            : "Se selecionar uma forma, o sistema usa a média de fatias dela para calcular as porções."}
+        </p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="serving_reference_quantity">Consumo por pessoa</Label>
+        <Input
+          id="serving_reference_quantity"
+          type="number"
+          step="0.01"
+          min="0"
+          {...register("serving_reference_quantity")}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="serving_reference_unit">Unidade por pessoa</Label>
+        <Input id="serving_reference_unit" placeholder="g, ml, un" {...register("serving_reference_unit")} />
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="category_id">Categoria</Label>
         <select
           id="category_id"
@@ -202,6 +257,21 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="notes">Observações</Label>
         <Textarea id="notes" {...register("notes")} />
+        <p className="text-xs text-stone-500">
+          Se houver forma selecionada, ela tem prioridade no cálculo. Sem forma, o sistema usa rendimento total e consumo por pessoa.
+        </p>
+      </div>
+      <div className="space-y-2 xl:col-span-2">
+        <Label htmlFor="public_ingredients_text">Ingredientes exibidos no site</Label>
+        <Textarea
+          id="public_ingredients_text"
+          rows={3}
+          placeholder="Ex: ovos, leite, farinha de trigo, açúcar cristal"
+          {...register("public_ingredients_text")}
+        />
+        <p className="text-xs text-stone-500">
+          Se este campo ficar vazio, o site usa automaticamente os nomes dos insumos da ficha técnica.
+        </p>
       </div>
       <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="photo_path">Imagem do site</Label>
