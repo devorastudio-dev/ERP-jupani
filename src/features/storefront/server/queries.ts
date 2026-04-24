@@ -56,14 +56,21 @@ type StorefrontProductRow = {
   finished_stock_quantity: number | null;
   categories: { name?: string | null } | null;
   recipes:
-    | Array<{
-        recipe_items:
-          | Array<{
-              ingredients: { name?: string | null } | null;
-            }>
-          | null;
-      }>
+    | StorefrontRecipeRow[]
+    | StorefrontRecipeRow
     | null;
+};
+
+type StorefrontRecipeItemRow =
+  | {
+      ingredients: { name?: string | null } | null;
+    }
+  | Array<{
+      ingredients: { name?: string | null } | null;
+    }>;
+
+type StorefrontRecipeRow = {
+  recipe_items: StorefrontRecipeItemRow | null;
 };
 
 const normalizeText = (value: string) =>
@@ -98,13 +105,17 @@ const buildFallbackImage = (category: string) => {
 export const buildProductSlug = (id: string, name: string) =>
   `${id}--${slugify(name) || "produto"}`;
 
+const normalizeArray = <T>(value: T | T[] | null | undefined): T[] =>
+  Array.isArray(value) ? value : value ? [value] : [];
+
 const mapProduct = (row: StorefrontProductRow): ProductCardData => {
   const categoryLabel = row.categories?.name?.trim() || "Sem categoria";
   const image = row.photo_path?.trim() || buildFallbackImage(categoryLabel);
+  const recipes = normalizeArray(row.recipes);
   const autoIngredients = [
     ...new Set(
-      (row.recipes ?? [])
-        .flatMap((recipe) => recipe.recipe_items ?? [])
+      recipes
+        .flatMap((recipe) => normalizeArray(recipe.recipe_items))
         .map((item) => item.ingredients?.name?.trim() || "")
         .filter(Boolean),
     ),
