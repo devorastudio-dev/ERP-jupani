@@ -13,6 +13,7 @@ const modulePermissions: Record<string, RoleSlug[]> = {
   producao: ["admin", "gerente", "producao"],
   funcionarios: ["admin", "financeiro", "gerente"],
   relatorios: ["admin", "gerente", "financeiro"],
+  site: ["admin"],
   configuracoes: ["admin"],
 };
 

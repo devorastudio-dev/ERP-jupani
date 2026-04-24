@@ -15,3 +15,5 @@ export const ATELIER_ADDRESS = {
   state: "MG",
   zip: "35536-000",
 };
+
+export const DEFAULT_SITE_TAGLINE = "Confeitaria artesanal";

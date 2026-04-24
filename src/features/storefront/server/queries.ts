@@ -12,6 +12,9 @@ const PRODUCT_SELECT = `
   photo_path,
   category_id,
   is_active,
+  show_on_storefront,
+  is_storefront_featured,
+  is_storefront_favorite,
   fulfillment_type,
   unit,
   notes,
@@ -28,6 +31,9 @@ type StorefrontProductRow = {
   photo_path: string | null;
   category_id: string | null;
   is_active: boolean;
+  show_on_storefront: boolean;
+  is_storefront_featured: boolean;
+  is_storefront_favorite: boolean;
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   unit: string;
   notes: string | null;
@@ -73,6 +79,7 @@ const mapProduct = (row: StorefrontProductRow): ProductCardData => {
   const image = row.photo_path?.trim() || buildFallbackImage(categoryLabel);
   const availableForOrder =
     row.is_active &&
+    row.show_on_storefront &&
     (row.fulfillment_type === "sob_encomenda" || Number(row.finished_stock_quantity ?? 0) > 0);
 
   return {
@@ -111,7 +118,7 @@ export async function getStorefrontSummary() {
   const [categories, products, readyProducts] = await Promise.all([
     getStorefrontCategories(),
     safeQuery<StorefrontProductRow[]>(
-      supabase.from("products").select(PRODUCT_SELECT).eq("is_active", true),
+      supabase.from("products").select(PRODUCT_SELECT).eq("is_active", true).eq("show_on_storefront", true),
       [],
     ),
     safeQuery<StorefrontProductRow[]>(
@@ -119,6 +126,7 @@ export async function getStorefrontSummary() {
         .from("products")
         .select(PRODUCT_SELECT)
         .eq("is_active", true)
+        .eq("show_on_storefront", true)
         .eq("fulfillment_type", "pronta_entrega"),
       [],
     ),
@@ -153,6 +161,7 @@ export async function getStorefrontProducts({
 
   if (!includeInactive) {
     builder = builder.eq("is_active", true);
+    builder = builder.eq("show_on_storefront", true);
   }
 
   if (category && category !== "all") {
@@ -160,7 +169,11 @@ export async function getStorefrontProducts({
   }
 
   if (featured) {
-    builder = builder.eq("fulfillment_type", "pronta_entrega");
+    builder = builder.eq("is_storefront_featured", true);
+  }
+
+  if (favorite) {
+    builder = builder.eq("is_storefront_favorite", true);
   }
 
   if (query?.trim()) {
@@ -177,10 +190,7 @@ export async function getStorefrontProducts({
     return { items: [] as ProductCardData[], total: 0, totalPages: 1 };
   }
 
-  let items = (result.data ?? []).map((row) => mapProduct(row as StorefrontProductRow));
-  if (favorite) {
-    items = items.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-  }
+  const items = (result.data ?? []).map((row) => mapProduct(row as StorefrontProductRow));
 
   const total = result.count ?? 0;
   return {
@@ -202,6 +212,7 @@ export async function getStorefrontProductBySlug(slug: string) {
     .select(PRODUCT_SELECT)
     .eq("id", productId)
     .eq("is_active", true)
+    .eq("show_on_storefront", true)
     .maybeSingle();
 
   if (error) {

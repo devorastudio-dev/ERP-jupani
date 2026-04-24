@@ -11,6 +11,7 @@ function normalizeProductPayload(values: ReturnType<typeof productSchema.parse>)
     category_id: values.category_id || null,
     description: values.description?.trim() || null,
     notes: values.notes?.trim() || null,
+    photo_path: values.photo_path?.trim() || null,
   };
 }
 
@@ -26,8 +27,12 @@ export async function createProductAction(formData: FormData) {
     yield_quantity: formData.get("yield_quantity"),
     unit: formData.get("unit"),
     notes: formData.get("notes"),
+    photo_path: formData.get("photo_path"),
     fulfillment_type: formData.get("fulfillment_type"),
     is_active: formData.get("is_active") === "true",
+    show_on_storefront: formData.get("show_on_storefront") === "true",
+    is_storefront_featured: formData.get("is_storefront_featured") === "true",
+    is_storefront_favorite: formData.get("is_storefront_favorite") === "true",
   });
 
   if (!parsed.success) {
@@ -44,6 +49,9 @@ export async function createProductAction(formData: FormData) {
 
   revalidatePath("/produtos");
   revalidatePath("/fichas-tecnicas");
+  revalidatePath("/site");
+  revalidatePath("/");
+  revalidatePath("/cardapio");
   return { success: true };
 }
 
@@ -59,8 +67,12 @@ export async function updateProductAction(id: string, formData: FormData) {
     yield_quantity: formData.get("yield_quantity"),
     unit: formData.get("unit"),
     notes: formData.get("notes"),
+    photo_path: formData.get("photo_path"),
     fulfillment_type: formData.get("fulfillment_type"),
     is_active: formData.get("is_active") === "true",
+    show_on_storefront: formData.get("show_on_storefront") === "true",
+    is_storefront_featured: formData.get("is_storefront_featured") === "true",
+    is_storefront_favorite: formData.get("is_storefront_favorite") === "true",
   });
 
   if (!parsed.success) {
@@ -77,6 +89,9 @@ export async function updateProductAction(id: string, formData: FormData) {
 
   revalidatePath("/produtos");
   revalidatePath("/fichas-tecnicas");
+  revalidatePath("/site");
+  revalidatePath("/");
+  revalidatePath("/cardapio");
   return { success: true };
 }
 

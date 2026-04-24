@@ -11,8 +11,12 @@ export const productSchema = z.object({
   yield_quantity: z.coerce.number().min(0).default(1),
   unit: z.string().min(1, "Informe a unidade."),
   notes: z.string().optional(),
+  photo_path: z.string().optional(),
   fulfillment_type: z.enum(["sob_encomenda", "pronta_entrega"]),
   is_active: z.coerce.boolean().default(true),
+  show_on_storefront: z.coerce.boolean().default(true),
+  is_storefront_featured: z.coerce.boolean().default(false),
+  is_storefront_favorite: z.coerce.boolean().default(false),
 });
 
 export type ProductSchema = z.infer<typeof productSchema>;

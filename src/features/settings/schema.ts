@@ -7,6 +7,7 @@ export const companySettingsSchema = z.object({
   whatsapp: z.string().optional(),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
   logo_url: z.string().url("URL da logo inválida").optional().or(z.literal("")),
+  instagram_handle: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -17,6 +18,17 @@ export const companySettingsSchema = z.object({
   order_prefix: z.string().default("PED"),
   low_stock_alert_enabled: z.boolean().default(true),
   low_stock_alert_threshold: z.coerce.number().min(0, "Limite não pode ser negativo").default(0),
+  site_tagline: z.string().optional(),
+  site_hero_title: z.string().optional(),
+  site_hero_description: z.string().optional(),
+  site_business_hours: z.string().optional(),
+  site_delivery_city: z.string().optional(),
+  site_delivery_note: z.string().optional(),
+  site_about_title: z.string().optional(),
+  site_about_text_1: z.string().optional(),
+  site_about_text_2: z.string().optional(),
+  site_meta_description: z.string().optional(),
+  site_footer_note: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -27,4 +39,3 @@ export type CompanySettings = CompanySettingsFormValues & {
   created_at: string;
   updated_at: string;
 };
-

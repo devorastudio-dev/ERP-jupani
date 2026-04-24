@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { loginSchema } from "@/features/auth/schema";
+import { ADMIN_BASE_PATH } from "@/lib/route-config";
 import { createClient } from "@/server/supabase/server";
 
 export async function loginAction(_: { error?: string } | undefined, formData: FormData) {
@@ -21,7 +22,7 @@ export async function loginAction(_: { error?: string } | undefined, formData: F
     return { error: "Não foi possível entrar. Verifique suas credenciais." };
   }
 
-  redirect("/dashboard");
+  redirect(`${ADMIN_BASE_PATH}/dashboard`);
 }
 
 export async function logoutAction() {

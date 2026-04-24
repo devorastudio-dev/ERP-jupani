@@ -1,24 +1,68 @@
+import Link from "next/link";
 import { SaleForm } from "@/features/sales/components/sale-form";
 import { SalesList } from "@/features/sales/components/sales-list";
-import { getSalesPageData } from "@/features/sales/server/queries";
+import { getSalesPageData, type SalesSourceFilter } from "@/features/sales/server/queries";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ADMIN_BASE_PATH } from "@/lib/route-config";
 import { formatDate } from "@/lib/utils";
 import { getCurrentProfile } from "@/server/auth/session";
 import { requireModule } from "@/server/auth/guards";
 
-export default async function SalesPage() {
+type SalesPageProps = {
+  searchParams?: Promise<{ origem?: string }>;
+};
+
+const isSalesSourceFilter = (value: string): value is SalesSourceFilter =>
+  value === "all" || value === "site" || value === "manual";
+
+export default async function SalesPage({ searchParams }: SalesPageProps) {
   const profile = await getCurrentProfile();
   if (!profile) return null;
   requireModule(profile, "vendas");
 
-  const { sales, products, openCashSession } = await getSalesPageData();
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const requestedOrigin = resolvedSearchParams?.origem ?? "";
+  const sourceFilter: SalesSourceFilter = isSalesSourceFilter(requestedOrigin)
+    ? requestedOrigin
+    : "all";
+
+  const { sales, products, openCashSession, sourceSummary } = await getSalesPageData(sourceFilter);
+  const filterLinks: Array<{ label: string; value: SalesSourceFilter; count: number }> = [
+    { label: "Todos", value: "all", count: sourceSummary.all },
+    { label: "Site", value: "site", count: sourceSummary.site },
+    { label: "Painel", value: "manual", count: sourceSummary.manual },
+  ];
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Vendas e pedidos"
         description="Monte pedidos completos com itens, pagamentos, histórico de status e integração direta com o caixa."
+        action={
+          <div className="flex flex-wrap gap-2">
+            {filterLinks.map((filter) => {
+              const href =
+                filter.value === "all"
+                  ? `${ADMIN_BASE_PATH}/vendas`
+                  : `${ADMIN_BASE_PATH}/vendas?origem=${filter.value}`;
+
+              return (
+                <Button
+                  key={filter.value}
+                  asChild
+                  variant={sourceFilter === filter.value ? "default" : "outline"}
+                  size="sm"
+                >
+                  <Link href={href}>
+                    {filter.label} ({filter.count})
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
+        }
       />
 
       <section className="grid gap-6 2xl:grid-cols-[1.05fr_0.75fr]">
@@ -31,6 +75,16 @@ export default async function SalesPage() {
             <div className="rounded-2xl bg-rose-50 p-4">
               <p className="text-sm text-stone-500">Pedidos no painel</p>
               <p className="mt-2 text-3xl font-semibold text-stone-900">{sales.length}</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl bg-[#fff8f4] p-4">
+                <p className="text-sm text-stone-500">Pedidos do site</p>
+                <p className="mt-2 text-2xl font-semibold text-stone-900">{sourceSummary.site}</p>
+              </div>
+              <div className="rounded-2xl bg-[#fff8f4] p-4">
+                <p className="text-sm text-stone-500">Lançados no painel</p>
+                <p className="mt-2 text-2xl font-semibold text-stone-900">{sourceSummary.manual}</p>
+              </div>
             </div>
             <div className="rounded-2xl bg-[#fff8f4] p-4">
               <p className="text-sm text-stone-500">Caixa atual</p>

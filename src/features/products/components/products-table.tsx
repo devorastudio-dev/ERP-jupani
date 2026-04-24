@@ -77,6 +77,19 @@ export function ProductsTable({
           ),
         },
         {
+          id: "site",
+          header: "Site",
+          cell: ({ row }) => (
+            <div className="flex flex-wrap gap-1">
+              <Badge variant={row.original.show_on_storefront ? "success" : "muted"}>
+                {row.original.show_on_storefront ? "Publicado" : "Oculto"}
+              </Badge>
+              {row.original.is_storefront_featured ? <Badge variant="warning">Destaque</Badge> : null}
+              {row.original.is_storefront_favorite ? <Badge variant="default">Favorito</Badge> : null}
+            </div>
+          ),
+        },
+        {
           id: "recipe",
           header: "Ficha",
           cell: ({ row }) => (

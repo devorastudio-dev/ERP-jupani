@@ -2,57 +2,71 @@ import { createClient } from "@/server/supabase/server";
 import { safeQuery } from "@/server/db/safe-query";
 import type { CashSessionRow, ProductRow, SaleSummaryRow } from "@/types/entities";
 
-export async function getSalesPageData() {
+export type SalesSourceFilter = "all" | "site" | "manual";
+
+export async function getSalesPageData(sourceFilter: SalesSourceFilter = "all") {
   const supabase = await createClient();
-  const [sales, products, openCashSession] = await Promise.all([
-    safeQuery<SaleSummaryRow[]>(
-      supabase
-        .from("sales")
-        .select(`
-          id,
-          customer_name,
-          phone,
-          sale_type,
-          order_type,
-          status,
-          subtotal_amount,
-          total_amount,
-          paid_amount,
-          pending_amount,
-          delivery_fee,
-          discount_amount,
-          payment_method,
-          notes,
-          internal_notes,
-          delivery_date,
-          fiscal_status,
-          stock_deducted,
-          sale_items (
-            id,
-            product_id,
-            product_name,
-            quantity,
-            unit_price,
-            discount_amount,
-            total_price,
-            notes
-          ),
-          sale_payments (
-            id,
-            payment_date,
-            amount,
-            payment_method,
-            notes
-          ),
-          order_status_history (
-            id,
-            old_status,
-            new_status,
-            notes,
-            created_at
-          )
-        `)
-        .order("created_at", { ascending: false }),
+  let salesQuery = supabase
+    .from("sales")
+    .select(`
+      id,
+      customer_name,
+      phone,
+      sale_type,
+      order_type,
+      status,
+      subtotal_amount,
+      total_amount,
+      paid_amount,
+      pending_amount,
+      delivery_fee,
+      discount_amount,
+      payment_method,
+      notes,
+      internal_notes,
+      external_reference,
+      delivery_date,
+      fiscal_status,
+      stock_deducted,
+      sale_items (
+        id,
+        product_id,
+        product_name,
+        quantity,
+        unit_price,
+        discount_amount,
+        total_price,
+        notes
+      ),
+      sale_payments (
+        id,
+        payment_date,
+        amount,
+        payment_method,
+        notes
+      ),
+      order_status_history (
+        id,
+        old_status,
+        new_status,
+        notes,
+        created_at
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (sourceFilter === "site") {
+    salesQuery = salesQuery.eq("external_reference", "site_publico");
+  }
+
+  if (sourceFilter === "manual") {
+    salesQuery = salesQuery.or("external_reference.is.null,external_reference.neq.site_publico");
+  }
+
+  const [sales, salesSources, products, openCashSession] = await Promise.all([
+    safeQuery<SaleSummaryRow[]>(salesQuery, []),
+    safeQuery<{ external_reference: string | null }[]>(
+      supabase.from("sales").select("external_reference"),
       [],
     ),
     safeQuery<ProductRow[]>(
@@ -74,5 +88,17 @@ export async function getSalesPageData() {
     ),
   ]);
 
-  return { sales, products, openCashSession };
+  const siteOrders = salesSources.filter((sale) => sale.external_reference === "site_publico").length;
+  const manualOrders = salesSources.length - siteOrders;
+
+  return {
+    sales,
+    products,
+    openCashSession,
+    sourceSummary: {
+      all: salesSources.length,
+      site: siteOrders,
+      manual: manualOrders,
+    },
+  };
 }

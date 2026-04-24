@@ -38,6 +38,9 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       yield_quantity: 1,
       fulfillment_type: "sob_encomenda",
       is_active: true,
+      show_on_storefront: true,
+      is_storefront_featured: false,
+      is_storefront_favorite: false,
     },
   });
 
@@ -53,8 +56,12 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       yield_quantity: Number(product?.yield_quantity ?? 1),
       unit: product?.unit ?? "",
       notes: product?.notes ?? "",
+      photo_path: product?.photo_path ?? "",
       fulfillment_type: product?.fulfillment_type ?? "sob_encomenda",
       is_active: product?.is_active ?? true,
+      show_on_storefront: product?.show_on_storefront ?? true,
+      is_storefront_featured: product?.is_storefront_featured ?? false,
+      is_storefront_favorite: product?.is_storefront_favorite ?? false,
     });
   }, [product, reset]);
 
@@ -172,10 +179,28 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
         <Label htmlFor="notes">Observações</Label>
         <Textarea id="notes" {...register("notes")} />
       </div>
+      <div className="space-y-2 xl:col-span-2">
+        <Label htmlFor="photo_path">Imagem do site</Label>
+        <Input id="photo_path" placeholder="/images/products/bolo-red-velvet.svg" {...register("photo_path")} />
+      </div>
       <label className="flex items-center gap-2 text-sm text-stone-600 xl:col-span-2">
         <input type="checkbox" value="true" {...register("is_active")} />
         Produto ativo
       </label>
+      <div className="grid gap-3 rounded-3xl border border-rose-100 bg-[#fff8f4] p-4 xl:col-span-2 md:grid-cols-3">
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("show_on_storefront")} />
+          Publicar no site
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("is_storefront_featured")} />
+          Destaque da semana
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("is_storefront_favorite")} />
+          Favorito da casa
+        </label>
+      </div>
       <div className="xl:col-span-2">
         <Button type="submit" disabled={pending}>
           {pending ? "Salvando..." : product?.id ? "Atualizar produto" : "Salvar produto"}

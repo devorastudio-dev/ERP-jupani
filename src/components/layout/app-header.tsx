@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AppBreadcrumb } from "@/components/layout/app-breadcrumb";
 import { AppMobileNav } from "@/components/layout/app-mobile-nav";
+import { ADMIN_BASE_PATH } from "@/lib/route-config";
 
 export function AppHeader({ profile }: { profile: AuthUserProfile }) {
   return (
@@ -32,7 +33,7 @@ export function AppHeader({ profile }: { profile: AuthUserProfile }) {
             <button className="rounded-2xl border border-white bg-white/90 p-3 text-stone-500 shadow-sm shadow-rose-100/40">
               <Bell className="h-4 w-4" />
             </button>
-            <Link href="/configuracoes" className="flex items-center gap-3 rounded-2xl border border-white bg-white/90 px-3 py-2 shadow-sm shadow-rose-100/40">
+            <Link href={`${ADMIN_BASE_PATH}/configuracoes`} className="flex items-center gap-3 rounded-2xl border border-white bg-white/90 px-3 py-2 shadow-sm shadow-rose-100/40">
               <Avatar>
                 <AvatarFallback>{profile.full_name}</AvatarFallback>
               </Avatar>

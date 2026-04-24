@@ -17,6 +17,10 @@ export interface ProductRow {
   unit: string;
   yield_quantity?: number | null;
   notes?: string | null;
+  photo_path?: string | null;
+  show_on_storefront?: boolean;
+  is_storefront_featured?: boolean;
+  is_storefront_favorite?: boolean;
   categories?: { name?: string | null } | null;
   recipes?: Array<{ id: string; theoretical_cost?: number | null }> | null;
 }
@@ -86,6 +90,7 @@ export interface SaleSummaryRow {
   payment_method?: string | null;
   notes?: string | null;
   internal_notes?: string | null;
+  external_reference?: string | null;
   delivery_date: string | null;
   fiscal_status: string | null;
   stock_deducted?: boolean;

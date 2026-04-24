@@ -75,6 +75,9 @@ export function SalesList({
                     <p className="text-lg font-semibold text-stone-900">{sale.customer_name || "Cliente não informado"}</p>
                     <Badge>{String(sale.status).replaceAll("_", " ")}</Badge>
                     <Badge variant="muted">{sale.fiscal_status ?? "nao_emitido"}</Badge>
+                    {sale.external_reference === "site_publico" ? (
+                      <Badge variant="warning">Pedido do site</Badge>
+                    ) : null}
                     <Badge variant={sale.stock_deducted ? "success" : "warning"}>
                       {sale.stock_deducted ? "Estoque baixado" : "Aguardando baixa"}
                     </Badge>

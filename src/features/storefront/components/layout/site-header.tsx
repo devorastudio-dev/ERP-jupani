@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { CartIndicator } from "@/features/storefront/components/cart/cart-indicator";
 import { Container } from "@/features/storefront/components/layout/container";
-import { CONTACT_INSTAGRAM_URL, CONTACT_PHONE_E164 } from "@/features/storefront/lib/contact";
+import type { StorefrontSettings } from "@/features/storefront/server/settings";
 import logoImg from "../../../../../public/images/logo.png";
 
 const navLinks = [
@@ -16,8 +16,9 @@ const navLinks = [
   { href: "/endereco", label: "Endereço" },
 ];
 
-export const SiteHeader = () => {
+export const SiteHeader = ({ settings }: { settings: StorefrontSettings }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const whatsappUrl = `https://wa.me/${settings.phoneE164}`;
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/5 bg-white/70 backdrop-blur-md">
@@ -31,7 +32,7 @@ export const SiteHeader = () => {
             className="-my-2"
           />
           <span className="hidden text-sm text-[#7b3b30] md:inline">
-            Confeitaria artesanal
+            {settings.tagline}
           </span>
         </Link>
 
@@ -46,7 +47,7 @@ export const SiteHeader = () => {
             </Link>
           ))}
           <a
-            href={`https://wa.me/${CONTACT_PHONE_E164}`}
+            href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-[#3a231c] px-4 py-2 text-sm font-semibold text-white! shadow-sm transition hover:-translate-y-0.5 hover:bg-[#5a362c]"
@@ -55,7 +56,7 @@ export const SiteHeader = () => {
             WhatsApp
           </a>
           <a
-            href={CONTACT_INSTAGRAM_URL}
+            href={settings.instagramUrl}
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram da Ju.pani"
@@ -128,7 +129,7 @@ export const SiteHeader = () => {
                 </Link>
               ))}
               <a
-                href={`https://wa.me/${CONTACT_PHONE_E164}`}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-full bg-[#3a231c] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#5a362c] self-start"
@@ -138,7 +139,7 @@ export const SiteHeader = () => {
                 WhatsApp
               </a>
               <a
-                href={CONTACT_INSTAGRAM_URL}
+                href={settings.instagramUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="py-2 text-[#7b3b30] transition hover:text-[#d37d64]"

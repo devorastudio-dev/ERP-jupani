@@ -68,6 +68,10 @@ export function SettingsForm({ defaultValues }: SettingsFormProps) {
             </div>
           </div>
           <div>
+            <Label>Instagram</Label>
+            <Input {...form.register("instagram_handle")} placeholder="jupani.confeitaria" />
+          </div>
+          <div>
             <Label>Email</Label>
             <Input {...form.register("email")} type="email" />
           </div>
@@ -198,6 +202,60 @@ export function SettingsForm({ defaultValues }: SettingsFormProps) {
 
       <Card>
         <CardHeader>
+          <CardTitle>Site público</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Tagline do site</Label>
+            <Input {...form.register("site_tagline")} placeholder="Confeitaria artesanal" />
+          </div>
+          <div>
+            <Label>Título principal da home</Label>
+            <Textarea {...form.register("site_hero_title")} rows={2} />
+          </div>
+          <div>
+            <Label>Descrição principal da home</Label>
+            <Textarea {...form.register("site_hero_description")} rows={3} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Horário exibido no site</Label>
+              <Input {...form.register("site_business_hours")} placeholder="Segunda a sábado · 9h às 19h" />
+            </div>
+            <div>
+              <Label>Cidade-base para entrega</Label>
+              <Input {...form.register("site_delivery_city")} placeholder="Piracema" />
+            </div>
+          </div>
+          <div>
+            <Label>Mensagem de entrega</Label>
+            <Textarea {...form.register("site_delivery_note")} rows={2} />
+          </div>
+          <div>
+            <Label>Título da página Sobre</Label>
+            <Input {...form.register("site_about_title")} />
+          </div>
+          <div>
+            <Label>Texto 1 da página Sobre</Label>
+            <Textarea {...form.register("site_about_text_1")} rows={4} />
+          </div>
+          <div>
+            <Label>Texto 2 da página Sobre</Label>
+            <Textarea {...form.register("site_about_text_2")} rows={4} />
+          </div>
+          <div>
+            <Label>Descrição SEO do site</Label>
+            <Textarea {...form.register("site_meta_description")} rows={3} />
+          </div>
+          <div>
+            <Label>Observação do rodapé</Label>
+            <Input {...form.register("site_footer_note")} placeholder="Desenvolvido por..." />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Observações internas</CardTitle>
         </CardHeader>
         <CardContent>
@@ -212,4 +270,3 @@ export function SettingsForm({ defaultValues }: SettingsFormProps) {
     </form>
   );
 }
-

@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/features/storefront/components/layout/container";
 import { SectionHeader } from "@/features/storefront/components/sections/section-header";
-import {
-  ATELIER_ADDRESS,
-  CONTACT_INSTAGRAM_HANDLE,
-  CONTACT_INSTAGRAM_URL,
-  CONTACT_PHONE_DISPLAY,
-  CONTACT_PHONE_E164,
-} from "@/features/storefront/lib/contact";
+import { getStorefrontSettings } from "@/features/storefront/server/settings";
 
 export const metadata: Metadata = {
   title: "Endereço",
@@ -21,7 +15,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function EnderecoPage() {
+export default async function EnderecoPage() {
+  const settings = await getStorefrontSettings();
+
   return (
     <div className="space-y-16 pb-20 pt-10">
       <Container className="space-y-6">
@@ -32,19 +28,19 @@ export default function EnderecoPage() {
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="space-y-4 rounded-3xl bg-white p-6 shadow-soft">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#d59a73]">
-              Ju.pani Ateliê
+              {settings.brandName} Ateliê
             </p>
             <h2 className="font-display text-2xl text-[#3a231c]">
-              {ATELIER_ADDRESS.street}
+              {settings.address.street}
             </h2>
             <p className="text-sm text-[#7b3b30]">
-              {ATELIER_ADDRESS.district} · {ATELIER_ADDRESS.city} ·{" "}
-              {ATELIER_ADDRESS.state} · {ATELIER_ADDRESS.zip}
+              {settings.address.district} · {settings.address.city} ·{" "}
+              {settings.address.state} · {settings.address.zip}
             </p>
             <div className="grid gap-4 rounded-2xl bg-[#fff8f3] p-4 text-sm text-[#3a231c]">
               <div>
                 <p className="font-semibold">Horários</p>
-                <p className="text-[#7b3b30]">Segunda a sábado · 9h às 19h</p>
+                <p className="text-[#7b3b30]">{settings.businessHours}</p>
               </div>
               <div>
                 <p className="font-semibold">Retirada no local</p>
@@ -55,7 +51,7 @@ export default function EnderecoPage() {
               <div>
                 <p className="font-semibold">Entregas</p>
                 <p className="text-[#7b3b30]">
-                  Cobertura inicial para bairros selecionados de Piracema.
+                  {settings.deliveryNote}
                 </p>
               </div>
             </div>
@@ -83,7 +79,7 @@ export default function EnderecoPage() {
           },
           {
             title: "Contato rápido",
-            text: `WhatsApp ${CONTACT_PHONE_DISPLAY} · Instagram @${CONTACT_INSTAGRAM_HANDLE}.`,
+            text: `WhatsApp ${settings.phoneDisplay} · Instagram @${settings.instagramHandle}.`,
           },
           {
             title: "Agendamento",
@@ -98,7 +94,7 @@ export default function EnderecoPage() {
             {item.title === "Contato rápido" && (
               <div className="mt-4 flex flex-col gap-2 text-sm">
                 <a
-                  href={`https://wa.me/${CONTACT_PHONE_E164}`}
+                  href={`https://wa.me/${settings.phoneE164}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-[#3a231c] transition hover:text-[#d37d64]"
@@ -106,7 +102,7 @@ export default function EnderecoPage() {
                   Chamar no WhatsApp
                 </a>
                 <a
-                  href={CONTACT_INSTAGRAM_URL}
+                  href={settings.instagramUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="text-[#3a231c] transition hover:text-[#d37d64]"

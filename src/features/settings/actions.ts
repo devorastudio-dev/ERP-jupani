@@ -35,5 +35,10 @@ export async function updateCompanySettings(formData: FormData) {
   }
 
   revalidatePath("/configuracoes");
+  revalidatePath("/site");
+  revalidatePath("/");
+  revalidatePath("/sobre");
+  revalidatePath("/endereco");
+  revalidatePath("/cardapio");
+  revalidatePath("/checkout");
 }
-

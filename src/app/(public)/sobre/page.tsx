@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Container } from "@/features/storefront/components/layout/container";
 import { SectionHeader } from "@/features/storefront/components/sections/section-header";
+import { getStorefrontSettings } from "@/features/storefront/server/settings";
 import sobreImg from "../../../../public/images/sobre.jpeg";
 
 export const metadata: Metadata = {
@@ -16,27 +17,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SobrePage() {
+export default async function SobrePage() {
+  const settings = await getStorefrontSettings();
+
   return (
     <div className="space-y-16 pb-20">
       <section className="pt-12">
         <Container className="grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
           <div className="space-y-6">
             <SectionHeader
-              title="Uma confeitaria feita de encontros"
+              title={settings.aboutTitle}
               subtitle="Do primeiro bolo feito em casa aos pedidos que atravessam a cidade."
             />
             <p className="text-base text-[#7b3b30]">
-              A Ju.pani nasceu do desejo de criar momentos doces e acolhedores.
-              Entre receitas familiares, cadernos de sabores e tardes de testes,
-              fomos refinando cada detalhe para transformar celebrações simples
-              em experiências memoráveis.
+              {settings.aboutText1}
             </p>
             <p className="text-base text-[#7b3b30]">
-              Hoje trabalhamos com pequenos lotes, ingredientes frescos e um
-              cuidado artesanal em cada etapa. Nosso ateliê é um espaço de
-              criatividade, afeto e escuta — tudo para que você se sinta em
-              casa.
+              {settings.aboutText2}
             </p>
           </div>
           <div className="rounded-[40px] bg-white p-4 shadow-soft">

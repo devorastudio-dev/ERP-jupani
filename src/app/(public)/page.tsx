@@ -5,8 +5,8 @@ import { ProductCard } from "@/features/storefront/components/products/product-c
 import { ProductCarousel } from "@/features/storefront/components/products/product-carousel";
 import { SectionHeader } from "@/features/storefront/components/sections/section-header";
 import { LinkButton } from "@/features/storefront/components/ui/link-button";
-import { ATELIER_ADDRESS, CONTACT_INSTAGRAM_URL } from "@/features/storefront/lib/contact";
 import { getFavoriteProducts, getFeaturedProducts, getProducts } from "@/features/storefront/lib/products";
+import { getStorefrontSettings } from "@/features/storefront/server/settings";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -23,10 +23,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function PublicHomePage() {
-  const [featured, favorites, latest] = await Promise.all([
+  const [featured, favorites, latest, settings] = await Promise.all([
     getFeaturedProducts(),
     getFavoriteProducts(),
     getProducts({ pageSize: 6 }),
+    getStorefrontSettings(),
   ]);
 
   return (
@@ -40,14 +41,13 @@ export default async function PublicHomePage() {
               Confeitaria artesanal
             </p>
             <h1 className="font-display text-4xl leading-tight text-[#3a231c] md:text-5xl">
-              Doces com memória afetiva, feitos para celebrar cada detalhe.
+              {settings.heroTitle}
             </h1>
             <p className="text-base text-[#7b3b30]">
-              Na Ju.pani, cada receita é criada à mão com ingredientes frescos,
-              texturas delicadas e combinações que aquecem o coração.
+              {settings.heroDescription}
             </p>
             <div className="inline-flex w-fit items-center rounded-full border border-[#f1d0c7] bg-white/90 px-4 py-2 text-sm font-semibold text-[#7b3b30] shadow-soft">
-              Entregas em {ATELIER_ADDRESS.city}
+              Entregas em {settings.deliveryCity}
             </div>
             <div className="flex flex-wrap gap-3">
               <LinkButton href="/cardapio" variant="primary">
@@ -57,7 +57,7 @@ export default async function PublicHomePage() {
                 Conhecer história
               </LinkButton>
               <a
-                href={CONTACT_INSTAGRAM_URL}
+                href={settings.instagramUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center rounded-full border border-[#f1d0c7] bg-white px-5 py-2 text-sm font-semibold text-[#7b3b30] transition hover:-translate-y-0.5 hover:bg-[#fdf3ee]"
