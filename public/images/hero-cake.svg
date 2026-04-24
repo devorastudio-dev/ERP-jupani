@@ -1,0 +1,17 @@
+<svg width="640" height="640" viewBox="0 0 640 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hero-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE8DD" />
+      <stop offset="100%" stop-color="#F2B59D" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="640" rx="48" fill="url(#hero-bg)" />
+  <circle cx="160" cy="180" r="100" fill="#FFF7F2" opacity="0.8" />
+  <circle cx="480" cy="460" r="130" fill="#D59A73" opacity="0.2" />
+  <rect x="160" y="260" width="320" height="180" rx="32" fill="#FFF4EC" />
+  <rect x="200" y="220" width="240" height="80" rx="28" fill="#F8D7CF" />
+  <rect x="220" y="180" width="200" height="60" rx="24" fill="#F3B59D" />
+  <circle cx="240" cy="360" r="18" fill="#D37D64" />
+  <circle cx="320" cy="360" r="18" fill="#D37D64" />
+  <circle cx="400" cy="360" r="18" fill="#D37D64" />
+</svg>
