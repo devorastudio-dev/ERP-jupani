@@ -62,6 +62,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="flex flex-wrap gap-2">
             <Badge>{getCategoryLabel(product.category)}</Badge>
             {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
+            {product.isHealthy ? <Badge variant="healthy">Fitness</Badge> : null}
           </div>
           <div className="space-y-2">
             <h1 className="font-display text-3xl text-[#3a231c] md:text-4xl">

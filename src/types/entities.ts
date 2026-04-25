@@ -28,6 +28,7 @@ export interface ProductRow {
   show_on_storefront?: boolean;
   is_storefront_featured?: boolean;
   is_storefront_favorite?: boolean;
+  is_storefront_healthy?: boolean;
   categories?: { name?: string | null } | null;
   recipes?: Array<{
     id: string;

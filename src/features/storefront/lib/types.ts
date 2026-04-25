@@ -15,6 +15,7 @@ export type ProductCardData = {
   estimatedKcalTotal?: number;
   estimatedKcalPerServing?: number;
   displayIngredients?: string | null;
+  isHealthy?: boolean;
   notes?: string | null;
   availableForOrder: boolean;
 };

@@ -12,6 +12,7 @@ export type ProductFilters = {
   category?: string;
   featured?: boolean;
   favorite?: boolean;
+  healthy?: boolean;
   page?: number;
   pageSize?: number;
   includeInactive?: boolean;
@@ -33,6 +34,14 @@ export const getFavoriteProducts = async () => {
   return items;
 };
 
+export const getHealthyProducts = async () => {
+  const { items } = await getStorefrontProducts({
+    healthy: true,
+    pageSize: 8,
+  });
+  return items;
+};
+
 export const getProductBySlug = async (slug: string) => getStorefrontProductBySlug(slug);
 
 export const getProducts = async ({
@@ -40,6 +49,7 @@ export const getProducts = async ({
   category,
   featured,
   favorite,
+  healthy,
   page = 1,
   pageSize = PRODUCT_PAGE_SIZE,
   includeInactive = false,
@@ -49,6 +59,7 @@ export const getProducts = async ({
     category,
     featured,
     favorite,
+    healthy,
     page,
     pageSize,
     includeInactive,

@@ -21,6 +21,7 @@ export const productSchema = z.object({
   show_on_storefront: z.coerce.boolean().default(true),
   is_storefront_featured: z.coerce.boolean().default(false),
   is_storefront_favorite: z.coerce.boolean().default(false),
+  is_storefront_healthy: z.coerce.boolean().default(false),
 });
 
 export type ProductSchema = z.infer<typeof productSchema>;

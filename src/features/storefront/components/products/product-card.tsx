@@ -30,6 +30,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex flex-wrap gap-2">
           <Badge>{getCategoryLabel(product.category)}</Badge>
           {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
+          {product.isHealthy ? <Badge variant="healthy">Fitness</Badge> : null}
         </div>
         <div className="space-y-2">
           <Link href={`/produto/${product.slug}`}>

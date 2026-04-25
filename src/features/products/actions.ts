@@ -95,6 +95,7 @@ export async function createProductAction(formData: FormData) {
     show_on_storefront: formData.get("show_on_storefront") === "true",
     is_storefront_featured: formData.get("is_storefront_featured") === "true",
     is_storefront_favorite: formData.get("is_storefront_favorite") === "true",
+    is_storefront_healthy: formData.get("is_storefront_healthy") === "true",
   });
 
   if (!parsed.success) {
@@ -153,6 +154,7 @@ export async function updateProductAction(id: string, formData: FormData) {
     show_on_storefront: formData.get("show_on_storefront") === "true",
     is_storefront_featured: formData.get("is_storefront_featured") === "true",
     is_storefront_favorite: formData.get("is_storefront_favorite") === "true",
+    is_storefront_healthy: formData.get("is_storefront_healthy") === "true",
   });
 
   if (!parsed.success) {

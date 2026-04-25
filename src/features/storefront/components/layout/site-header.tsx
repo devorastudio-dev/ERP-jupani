@@ -50,7 +50,7 @@ export const SiteHeader = ({ settings }: { settings: StorefrontSettings }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#3a231c] px-4 py-2 text-sm font-semibold text-white! shadow-sm transition hover:-translate-y-0.5 hover:bg-[#5a362c]"
+            className="inline-flex items-center gap-2 rounded-full bg-[#3a231c] px-4 py-2 text-sm font-semibold !text-white shadow-sm transition hover:-translate-y-0.5 hover:!text-white hover:bg-[#5a362c]"
           >
             <WhatsappLogo width={16} height={16} />
             WhatsApp

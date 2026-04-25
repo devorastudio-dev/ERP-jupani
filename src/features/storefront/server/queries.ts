@@ -15,6 +15,7 @@ const PRODUCT_SELECT = `
   show_on_storefront,
   is_storefront_featured,
   is_storefront_favorite,
+  is_storefront_healthy,
   fulfillment_type,
   unit,
   notes,
@@ -45,6 +46,7 @@ type StorefrontProductRow = {
   show_on_storefront: boolean;
   is_storefront_featured: boolean;
   is_storefront_favorite: boolean;
+  is_storefront_healthy: boolean;
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   unit: string;
   notes: string | null;
@@ -144,6 +146,7 @@ const mapProduct = (row: StorefrontProductRow): ProductCardData => {
     estimatedKcalTotal: Number(row.estimated_kcal_total ?? 0),
     estimatedKcalPerServing: Number(row.estimated_kcal_per_serving ?? 0),
     displayIngredients,
+    isHealthy: row.is_storefront_healthy,
     notes: row.notes,
     availableForOrder,
   };
@@ -193,6 +196,7 @@ export async function getStorefrontProducts({
   category,
   featured,
   favorite,
+  healthy,
   page = 1,
   pageSize = 9,
   includeInactive = false,
@@ -201,6 +205,7 @@ export async function getStorefrontProducts({
   category?: string;
   featured?: boolean;
   favorite?: boolean;
+  healthy?: boolean;
   page?: number;
   pageSize?: number;
   includeInactive?: boolean;
@@ -223,6 +228,10 @@ export async function getStorefrontProducts({
 
   if (favorite) {
     builder = builder.eq("is_storefront_favorite", true);
+  }
+
+  if (healthy) {
+    builder = builder.eq("is_storefront_healthy", true);
   }
 
   if (query?.trim()) {

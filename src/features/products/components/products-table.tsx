@@ -131,6 +131,7 @@ export function ProductsTable({
               </Badge>
               {row.original.is_storefront_featured ? <Badge variant="warning">Destaque</Badge> : null}
               {row.original.is_storefront_favorite ? <Badge variant="default">Favorito</Badge> : null}
+              {row.original.is_storefront_healthy ? <Badge variant="success">Fitness</Badge> : null}
             </div>
           ),
         },

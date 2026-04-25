@@ -5,7 +5,7 @@ import { ProductCard } from "@/features/storefront/components/products/product-c
 import { ProductCarousel } from "@/features/storefront/components/products/product-carousel";
 import { SectionHeader } from "@/features/storefront/components/sections/section-header";
 import { LinkButton } from "@/features/storefront/components/ui/link-button";
-import { getFavoriteProducts, getFeaturedProducts, getProducts } from "@/features/storefront/lib/products";
+import { getFavoriteProducts, getFeaturedProducts, getHealthyProducts, getProducts } from "@/features/storefront/lib/products";
 import { getStorefrontSettings } from "@/features/storefront/server/settings";
 
 export const metadata: Metadata = {
@@ -23,9 +23,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function PublicHomePage() {
-  const [featured, favorites, latest, settings] = await Promise.all([
+  const [featured, favorites, healthy, latest, settings] = await Promise.all([
     getFeaturedProducts(),
     getFavoriteProducts(),
+    getHealthyProducts(),
     getProducts({ pageSize: 6 }),
     getStorefrontSettings(),
   ]);
@@ -118,6 +119,28 @@ export default async function PublicHomePage() {
           <ProductCarousel products={favorites} />
         </Container>
       </section>
+
+      {healthy.length ? (
+        <section>
+          <Container>
+            <div className="overflow-hidden rounded-[40px] border border-[#d9ead9] bg-[linear-gradient(135deg,#f4fbf2_0%,#eef8ea_52%,#f9fdf7_100%)] p-6 shadow-soft md:p-8">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <SectionHeader
+                  title="Doces fitness"
+                  subtitle="Nosso diferencial em destaque: opções mais equilibradas para quem quer leveza sem abrir mão do sabor."
+                  className="[&>p:first-child]:text-[#67a26a] [&>h2]:text-[#245235] [&>p:last-child]:text-[#4f6b54]"
+                />
+                <div className="inline-flex w-fit items-center rounded-full border border-[#cfe4cf] bg-white/80 px-4 py-2 text-sm font-semibold text-[#356243] shadow-sm">
+                  Receitas mais leves, sem perder a graça
+                </div>
+              </div>
+              <div className="mt-6">
+                <ProductCarousel products={healthy} />
+              </div>
+            </div>
+          </Container>
+        </section>
+      ) : null}
 
       <section>
         <Container className="space-y-6">
