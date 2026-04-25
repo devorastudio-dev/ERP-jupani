@@ -12,10 +12,10 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
+        setAll() {
+          // Cookie writes must happen in middleware, server actions or route handlers.
+          // During Server Component rendering we expose a read-only cookie adapter.
+          return;
         },
       },
     },
