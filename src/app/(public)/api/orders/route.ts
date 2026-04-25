@@ -139,104 +139,66 @@ export async function POST(request: Request) {
         ? ATELIER_ADDRESS.zip
         : payload.addressZip ?? "";
 
-    const customerPayload = {
-      name: payload.customerName,
-      phone: payload.customerPhone,
-      whatsapp: payload.customerPhone,
-      notes:
-        payload.shippingMethod === "DELIVERY"
-          ? formatAddress({
-              street: addressStreet,
-              number: addressNumber,
-              district: addressDistrict,
-              city: addressCity,
-              state: addressState,
-              zip: addressZip,
-            })
-          : "Retirada no ateliê",
-    };
+    const customerNotes =
+      payload.shippingMethod === "DELIVERY"
+        ? formatAddress({
+            street: addressStreet,
+            number: addressNumber,
+            district: addressDistrict,
+            city: addressCity,
+            state: addressState,
+            zip: addressZip,
+          })
+        : "Retirada no ateliê";
 
-    const { data: existingCustomer } = await supabase
-      .from("customers")
-      .select("id")
-      .eq("phone", payload.customerPhone)
-      .limit(1)
-      .maybeSingle();
+    const internalNotes =
+      payload.shippingMethod === "DELIVERY"
+        ? `Endereço: ${formatAddress({
+            street: addressStreet,
+            number: addressNumber,
+            district: addressDistrict,
+            city: addressCity,
+            state: addressState,
+            zip: addressZip,
+          })}${payload.addressReference ? ` | Referência: ${payload.addressReference}` : ""}`
+        : "Pedido iniciado pelo site público para retirada no ateliê.";
 
-    let customerId = existingCustomer?.id ?? null;
-
-    if (existingCustomer?.id) {
-      await supabase.from("customers").update(customerPayload).eq("id", existingCustomer.id);
-    } else {
-      const { data: createdCustomer } = await supabase
-        .from("customers")
-        .insert(customerPayload)
-        .select("id")
-        .single();
-      customerId = createdCustomer?.id ?? null;
-    }
-
-    const { data: sale, error: saleError } = await supabase
-      .from("sales")
-      .insert({
-        customer_id: customerId,
-        customer_name: payload.customerName,
-        phone: payload.customerPhone,
-        sale_type: "encomenda",
-        order_type: payload.shippingMethod === "DELIVERY" ? "entrega" : "retirada",
-        status: "aguardando_confirmacao",
-        subtotal_amount: subtotal,
-        discount_amount: 0,
-        delivery_fee: shippingFee,
-        total_amount: total,
-        paid_amount: 0,
-        pending_amount: total,
-        payment_method: payload.paymentMethod,
-        notes: cart.notes ?? null,
-        internal_notes:
-          payload.shippingMethod === "DELIVERY"
-            ? `Endereço: ${formatAddress({
-                street: addressStreet,
-                number: addressNumber,
-                district: addressDistrict,
-                city: addressCity,
-                state: addressState,
-                zip: addressZip,
-              })}${payload.addressReference ? ` | Referência: ${payload.addressReference}` : ""}`
-            : "Pedido iniciado pelo site público para retirada no ateliê.",
-        fiscal_status: "nao_emitido",
-        external_reference: "site_publico",
-      })
-      .select("id")
-      .single();
-
-    if (saleError || !sale) {
-      throw new Error(saleError?.message ?? "Não foi possível registrar o pedido.");
-    }
-
-    const { error: itemsError } = await supabase.from("sale_items").insert(
-      cart.items.map((item) => ({
-        sale_id: sale.id,
-        product_id: item.productId,
-        product_name: item.name,
-        quantity: item.quantity,
-        unit_price: item.unitPrice,
-        discount_amount: 0,
-        total_price: item.unitPrice * item.quantity,
-        notes: item.itemNotes ?? null,
-      })),
+    const { data: orderId, error: orderError } = await supabase.rpc(
+      "create_storefront_order",
+      {
+        p_customer_name: payload.customerName,
+        p_customer_phone: payload.customerPhone,
+        p_customer_whatsapp: payload.customerPhone,
+        p_customer_notes: customerNotes,
+        p_sale_type: "encomenda",
+        p_order_type: payload.shippingMethod === "DELIVERY" ? "entrega" : "retirada",
+        p_status: "aguardando_confirmacao",
+        p_subtotal_amount: subtotal,
+        p_discount_amount: 0,
+        p_delivery_fee: shippingFee,
+        p_total_amount: total,
+        p_paid_amount: 0,
+        p_pending_amount: total,
+        p_payment_method: payload.paymentMethod,
+        p_notes: cart.notes ?? null,
+        p_internal_notes: internalNotes,
+        p_fiscal_status: "nao_emitido",
+        p_external_reference: "site_publico",
+        p_items: cart.items.map((item) => ({
+          product_id: item.productId,
+          product_name: item.name,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          discount_amount: 0,
+          total_price: item.unitPrice * item.quantity,
+          notes: item.itemNotes ?? null,
+        })),
+      }
     );
 
-    if (itemsError) {
-      throw new Error(itemsError.message);
+    if (orderError || !orderId) {
+      throw new Error(orderError?.message ?? "Não foi possível registrar o pedido.");
     }
-
-    await supabase.from("order_status_history").insert({
-      sale_id: sale.id,
-      old_status: null,
-      new_status: "aguardando_confirmacao",
-      notes: "Pedido criado pelo site público",
-    });
 
     const message = buildWhatsAppMessage({
       items: cart.items,
@@ -270,7 +232,7 @@ export async function POST(request: Request) {
     revalidatePath("/dashboard");
     revalidatePath("/vendas");
 
-    return NextResponse.json({ ok: true, orderId: sale.id, whatsappUrl });
+    return NextResponse.json({ ok: true, orderId, whatsappUrl });
   } catch (error) {
     console.error("Order error:", error);
     return NextResponse.json(

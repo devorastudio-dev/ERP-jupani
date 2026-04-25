@@ -79,7 +79,7 @@ const formatZip = (value: string) => {
 };
 
 export const CheckoutForm = () => {
-  const { cart, loading } = useCart();
+  const { cart, loading, setNotes } = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -420,8 +420,10 @@ export const CheckoutForm = () => {
           <Textarea
             rows={3}
             value={cart.notes ?? ""}
-            onChange={() => undefined}
-            readOnly
+            onChange={(event) => {
+              void setNotes(event.target.value);
+            }}
+            placeholder="Ex: entregar após 16h, sem lactose, caprichar na calda."
           />
           <p className="mt-1 text-xs text-[#7b3b30]">
             As observações do carrinho serão enviadas ao WhatsApp.
