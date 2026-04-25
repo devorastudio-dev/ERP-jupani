@@ -132,7 +132,7 @@ export const SiteHeader = ({ settings }: { settings: StorefrontSettings }) => {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-[#3a231c] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#5a362c] self-start"
+                className="inline-flex items-center gap-2 rounded-full bg-[#3a231c] px-4 py-2 text-sm font-semibold !text-white shadow-sm transition hover:bg-[#5a362c] hover:!text-white self-start"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <WhatsappLogo width={16} height={16} />

@@ -11,6 +11,7 @@ type RecipeMetricsRow = {
     unit: string;
     quantity: number | null;
     ingredients: {
+      name?: string | null;
       unit?: string | null;
       nutrition_quantity?: number | null;
       nutrition_unit?: string | null;
@@ -26,6 +27,7 @@ type ProductMetricsRow = {
   pan_shape_code: string | null;
   serving_reference_quantity: number | null;
   serving_reference_unit: string | null;
+  public_ingredients_text: string | null;
 };
 
 export async function recalculateRecipeAndProductMetrics(recipeId: string) {
@@ -40,6 +42,7 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
         unit,
         quantity,
         ingredients (
+          name,
           unit,
           nutrition_quantity,
           nutrition_unit,
@@ -56,7 +59,7 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
 
   const { data: product, error: productError } = await supabase
     .from("products")
-    .select("id, yield_quantity, unit, pan_shape_code, serving_reference_quantity, serving_reference_unit")
+    .select("id, yield_quantity, unit, pan_shape_code, serving_reference_quantity, serving_reference_unit, public_ingredients_text")
     .eq("id", recipe.product_id)
     .single<ProductMetricsRow>();
 
@@ -92,6 +95,16 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
     estimated_servings: metrics.estimatedServings,
     estimated_kcal_total: metrics.estimatedKcalTotal,
     estimated_kcal_per_serving: metrics.estimatedKcalPerServing,
+    public_ingredients_text:
+      product.public_ingredients_text?.trim() ||
+      [
+        ...new Set(
+          (recipe.recipe_items ?? [])
+            .map((item) => item.ingredients?.name?.trim() || "")
+            .filter(Boolean),
+        ),
+      ].join(", ") ||
+      null,
   };
 
   const { error: updateRecipeError } = await supabase.from("recipes").update(recipePayload).eq("id", recipeId);

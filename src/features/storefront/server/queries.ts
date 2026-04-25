@@ -25,14 +25,7 @@ const PRODUCT_SELECT = `
   public_ingredients_text,
   created_at,
   finished_stock_quantity,
-  categories:product_categories(name),
-  recipes (
-    recipe_items (
-      ingredients (
-        name
-      )
-    )
-  )
+  categories:product_categories(name)
 `;
 
 type StorefrontProductRow = {
@@ -57,22 +50,6 @@ type StorefrontProductRow = {
   created_at: string;
   finished_stock_quantity: number | null;
   categories: { name?: string | null } | null;
-  recipes:
-    | StorefrontRecipeRow[]
-    | StorefrontRecipeRow
-    | null;
-};
-
-type StorefrontRecipeItemRow =
-  | {
-      ingredients: { name?: string | null } | null;
-    }
-  | Array<{
-      ingredients: { name?: string | null } | null;
-    }>;
-
-type StorefrontRecipeRow = {
-  recipe_items: StorefrontRecipeItemRow | null;
 };
 
 const normalizeText = (value: string) =>
@@ -107,23 +84,10 @@ const buildFallbackImage = (category: string) => {
 export const buildProductSlug = (id: string, name: string) =>
   `${id}--${slugify(name) || "produto"}`;
 
-const normalizeArray = <T>(value: T | T[] | null | undefined): T[] =>
-  Array.isArray(value) ? value : value ? [value] : [];
-
 const mapProduct = (row: StorefrontProductRow): ProductCardData => {
   const categoryLabel = row.categories?.name?.trim() || "Sem categoria";
   const image = row.photo_path?.trim() || buildFallbackImage(categoryLabel);
-  const recipes = normalizeArray(row.recipes);
-  const autoIngredients = [
-    ...new Set(
-      recipes
-        .flatMap((recipe) => normalizeArray(recipe.recipe_items))
-        .map((item) => item.ingredients?.name?.trim() || "")
-        .filter(Boolean),
-    ),
-  ];
-  const displayIngredients =
-    row.public_ingredients_text?.trim() || (autoIngredients.length ? autoIngredients.join(", ") : null);
+  const displayIngredients = row.public_ingredients_text?.trim() || null;
   const availableForOrder =
     row.is_active &&
     row.show_on_storefront &&
