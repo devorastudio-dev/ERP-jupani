@@ -114,6 +114,13 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
     startTransition(async () => {
       const formData = new FormData();
       Object.entries(values).forEach(([key, value]) => {
+        if (key === "category_ids" && Array.isArray(value)) {
+          value
+            .filter((item): item is string => typeof item === "string" && item.length > 0)
+            .forEach((item) => formData.append("category_ids", item));
+          return;
+        }
+
         formData.set(key, String(value ?? ""));
       });
       if (selectedFile) {

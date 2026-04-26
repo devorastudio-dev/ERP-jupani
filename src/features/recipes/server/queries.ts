@@ -62,7 +62,7 @@ export async function getRecipesPageData() {
     safeQuery<IngredientRow[]>(
       supabase
         .from("ingredients")
-        .select("id, name, unit, average_cost, stock_quantity, nutrition_quantity, nutrition_unit, kcal_amount")
+        .select("id, name, unit, average_cost, stock_quantity, nutrition_quantity, nutrition_unit, kcal_amount, categories:ingredient_categories(name)")
         .order("name"),
       [],
     ),

@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/incompatible-library */
 
-import { useEffect, useMemo, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -26,6 +26,44 @@ interface RecipeFormProps {
   onSuccess?: () => void;
 }
 
+const PACKAGING_HINT_TERMS = [
+  "embalag",
+  "caixa",
+  "pote",
+  "tampa",
+  "fita",
+  "sacola",
+  "frasco",
+  "rotulo",
+  "rótulo",
+  "colher",
+  "garfo",
+  "faca",
+  "copo",
+  "bandeja",
+  "papel",
+  "forminha",
+  "acetato",
+  "laco",
+  "laço",
+  "tag",
+];
+
+function isPackagingIngredient(ingredient: IngredientRow) {
+  const categoryName = ingredient.categories?.name?.toLowerCase() ?? "";
+  const ingredientName = ingredient.name.toLowerCase();
+
+  return PACKAGING_HINT_TERMS.some(
+    (term) => categoryName.includes(term) || ingredientName.includes(term),
+  );
+}
+
+function formatIngredientOptionLabel(ingredient: IngredientRow) {
+  return ingredient.categories?.name
+    ? `${ingredient.name} • ${ingredient.categories.name}`
+    : ingredient.name;
+}
+
 export function RecipeForm({
   products,
   ingredients,
@@ -34,6 +72,7 @@ export function RecipeForm({
 }: RecipeFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [showAllPackagingIngredients, setShowAllPackagingIngredients] = useState(false);
   const {
     control,
     register,
@@ -75,6 +114,14 @@ export function RecipeForm({
     () => new Map(ingredients.map((ingredient) => [ingredient.id, ingredient])),
     [ingredients],
   );
+  const packagingIngredients = useMemo(
+    () => ingredients.filter((ingredient) => isPackagingIngredient(ingredient)),
+    [ingredients],
+  );
+  const packagingIngredientOptions =
+    showAllPackagingIngredients || packagingIngredients.length === 0
+      ? ingredients
+      : packagingIngredients;
 
   useEffect(() => {
     reset({
@@ -250,7 +297,7 @@ export function RecipeForm({
                         <option value="">Selecione</option>
                         {ingredients.map((ingredient) => (
                           <option key={ingredient.id} value={ingredient.id}>
-                            {ingredient.name}
+                            {formatIngredientOptionLabel(ingredient)}
                           </option>
                         ))}
                       </select>
@@ -315,6 +362,27 @@ export function RecipeForm({
                 Adicionar embalagem
               </Button>
             </div>
+            <div className="flex flex-col gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 text-sm text-stone-600">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={showAllPackagingIngredients}
+                  onChange={(event) => setShowAllPackagingIngredients(event.target.checked)}
+                  className="h-4 w-4 rounded border-emerald-200 text-emerald-600"
+                />
+                Mostrar todos os insumos no seletor de embalagem
+              </label>
+              {!showAllPackagingIngredients && packagingIngredients.length > 0 ? (
+                <p className="text-xs text-emerald-700">
+                  Mostrando primeiro os insumos que parecem ser embalagens com base no nome ou categoria.
+                </p>
+              ) : null}
+              {!showAllPackagingIngredients && packagingIngredients.length === 0 ? (
+                <p className="text-xs text-amber-700">
+                  Nenhum insumo com perfil de embalagem foi identificado automaticamente. Ative a opção acima para ver todos.
+                </p>
+              ) : null}
+            </div>
             <div className="space-y-3">
               {packagingFields.length ? (
                 packagingFields.map((field, index) => {
@@ -348,9 +416,9 @@ export function RecipeForm({
                           className="flex h-10 w-full rounded-xl border border-emerald-100 bg-white px-3 text-sm"
                         >
                           <option value="">Selecione</option>
-                          {ingredients.map((ingredient) => (
+                          {packagingIngredientOptions.map((ingredient) => (
                             <option key={ingredient.id} value={ingredient.id}>
-                              {ingredient.name}
+                              {formatIngredientOptionLabel(ingredient)}
                             </option>
                           ))}
                         </select>

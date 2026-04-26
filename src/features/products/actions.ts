@@ -107,10 +107,13 @@ async function uploadProductImage(file: File) {
 }
 
 export async function createProductAction(formData: FormData) {
+  const rawCategoryIds = formData
+    .getAll("category_ids")
+    .filter((value): value is string => typeof value === "string" && value.length > 0);
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     category_id: formData.get("category_id"),
-    category_ids: formData.getAll("category_ids"),
+    category_ids: rawCategoryIds,
     description: formData.get("description"),
     sale_price: formData.get("sale_price"),
     estimated_cost: formData.get("estimated_cost"),
@@ -177,10 +180,13 @@ export async function createProductAction(formData: FormData) {
 }
 
 export async function updateProductAction(id: string, formData: FormData) {
+  const rawCategoryIds = formData
+    .getAll("category_ids")
+    .filter((value): value is string => typeof value === "string" && value.length > 0);
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     category_id: formData.get("category_id"),
-    category_ids: formData.getAll("category_ids"),
+    category_ids: rawCategoryIds,
     description: formData.get("description"),
     sale_price: formData.get("sale_price"),
     estimated_cost: formData.get("estimated_cost"),
