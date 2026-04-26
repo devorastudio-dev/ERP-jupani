@@ -1,11 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createProductCategoryAction } from "@/features/products/actions";
+import { createProductCategoryAction, updateProductCategoryAction } from "@/features/products/actions";
 import { categorySchema, type CategorySchema } from "@/features/recipes/schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import type { NamedCategory } from "@/types/entities";
 export function ProductCategoriesCard({ categories }: { categories: NamedCategory[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
   const {
     register,
     handleSubmit,
@@ -43,6 +45,33 @@ export function ProductCategoriesCard({ categories }: { categories: NamedCategor
     });
   });
 
+  const startEditing = (category: NamedCategory) => {
+    setEditingCategoryId(category.id);
+    setEditingName(category.name);
+  };
+
+  const cancelEditing = () => {
+    setEditingCategoryId(null);
+    setEditingName("");
+  };
+
+  const submitEditing = (categoryId: string) => {
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("name", editingName);
+      const result = await updateProductCategoryAction(categoryId, formData);
+
+      if (!result?.success) {
+        toast.error(result?.error ?? "Não foi possível atualizar a categoria.");
+        return;
+      }
+
+      toast.success("Categoria atualizada.");
+      cancelEditing();
+      router.refresh();
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -59,12 +88,60 @@ export function ProductCategoriesCard({ categories }: { categories: NamedCategor
             {pending ? "Salvando..." : "Adicionar categoria"}
           </Button>
         </form>
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-3">
           {categories.length ? (
             categories.map((category) => (
-              <Badge key={category.id} variant="muted">
-                {category.name}
-              </Badge>
+              <div
+                key={category.id}
+                className="flex flex-wrap items-center gap-2 rounded-2xl border border-rose-100 bg-rose-50/40 px-3 py-2"
+              >
+                {editingCategoryId === category.id ? (
+                  <>
+                    <div className="min-w-[220px] flex-1">
+                      <Label htmlFor={`edit-product-category-${category.id}`} className="sr-only">
+                        Editar categoria
+                      </Label>
+                      <Input
+                        id={`edit-product-category-${category.id}`}
+                        value={editingName}
+                        onChange={(event) => setEditingName(event.target.value)}
+                        placeholder="Nome da categoria"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={pending}
+                      onClick={() => submitEditing(category.id)}
+                    >
+                      {pending ? "Salvando..." : "Salvar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={pending}
+                      onClick={cancelEditing}
+                    >
+                      Cancelar
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Badge variant="muted">{category.name}</Badge>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={pending}
+                      onClick={() => startEditing(category)}
+                    >
+                      Editar
+                    </Button>
+                  </>
+                )}
+              </div>
             ))
           ) : (
             <p className="text-sm text-stone-500">Nenhuma categoria cadastrada.</p>

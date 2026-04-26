@@ -185,7 +185,7 @@ export async function createSaleAction(formData: FormData) {
       fiscal_status: "nao_emitido",
       created_by: user?.id ?? null,
     })
-    .select("id")
+    .select("id, order_code")
     .single();
 
   if (saleError || !sale) {

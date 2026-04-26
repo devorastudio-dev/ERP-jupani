@@ -72,6 +72,11 @@ export function SalesList({
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
+                    {sale.order_code ? (
+                      <p className="rounded-full bg-[#fff3eb] px-3 py-1 text-xs font-semibold tracking-[0.18em] text-[#b96d45]">
+                        Pedido #{sale.order_code}
+                      </p>
+                    ) : null}
                     <p className="text-lg font-semibold text-stone-900">{sale.customer_name || "Cliente não informado"}</p>
                     <Badge>{String(sale.status).replaceAll("_", " ")}</Badge>
                     <Badge variant="muted">{sale.fiscal_status ?? "nao_emitido"}</Badge>

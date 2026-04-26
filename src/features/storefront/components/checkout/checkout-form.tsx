@@ -198,8 +198,7 @@ export const CheckoutForm = () => {
       } catch {
         // ignore storage errors
       }
-      const nextUrl = `/pedido-confirmado?pedido=${encodeURIComponent(data.orderId)}&whatsapp=${encodeURIComponent(data.whatsappUrl)}`;
-      window.location.href = nextUrl;
+      window.location.href = data.whatsappUrl;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro inesperado.");
     } finally {

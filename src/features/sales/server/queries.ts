@@ -10,6 +10,7 @@ export async function getSalesPageData(sourceFilter: SalesSourceFilter = "all") 
     .from("sales")
     .select(`
       id,
+      order_code,
       customer_name,
       phone,
       sale_type,

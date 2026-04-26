@@ -4,6 +4,7 @@ import { formatCurrency } from "@/features/storefront/lib/format";
 import type { CartItem } from "@/features/storefront/lib/types";
 
 type WhatsAppOrder = {
+  orderCode: string;
   items: CartItem[];
   subtotal: number;
   shippingFee: number;
@@ -20,6 +21,7 @@ export const buildWhatsAppMessage = (order: WhatsAppOrder) => {
   const lines: string[] = [];
 
   lines.push("🍰🧁 Pedido Ju.pani");
+  lines.push(`Pedido: #${order.orderCode}`);
   lines.push("");
   lines.push("Itens:");
   order.items.forEach((item) => {

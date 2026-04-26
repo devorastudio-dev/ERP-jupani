@@ -100,6 +100,7 @@ export interface RecipeRow {
 
 export interface SaleSummaryRow {
   id: string;
+  order_code?: string | null;
   customer_name: string | null;
   phone?: string | null;
   sale_type?: string | null;

@@ -163,7 +163,7 @@ export async function POST(request: Request) {
           })}${payload.addressReference ? ` | Referência: ${payload.addressReference}` : ""}`
         : "Pedido iniciado pelo site público para retirada no ateliê.";
 
-    const { data: orderId, error: orderError } = await supabase.rpc(
+    const { data: saleId, error: orderError } = await supabase.rpc(
       "create_storefront_order",
       {
         p_customer_name: payload.customerName,
@@ -196,11 +196,22 @@ export async function POST(request: Request) {
       }
     );
 
-    if (orderError || !orderId) {
+    if (orderError || !saleId) {
       throw new Error(orderError?.message ?? "Não foi possível registrar o pedido.");
     }
 
+    const { data: saleRecord, error: saleRecordError } = await supabase
+      .from("sales")
+      .select("id, order_code")
+      .eq("id", saleId)
+      .maybeSingle();
+
+    if (saleRecordError || !saleRecord?.order_code) {
+      throw new Error(saleRecordError?.message ?? "Não foi possível localizar o número do pedido.");
+    }
+
     const message = buildWhatsAppMessage({
+      orderCode: saleRecord.order_code,
       items: cart.items,
       subtotal,
       shippingFee,
@@ -232,7 +243,12 @@ export async function POST(request: Request) {
     revalidatePath("/dashboard");
     revalidatePath("/vendas");
 
-    return NextResponse.json({ ok: true, orderId, whatsappUrl });
+    return NextResponse.json({
+      ok: true,
+      saleId: saleRecord.id,
+      orderCode: saleRecord.order_code,
+      whatsappUrl,
+    });
   } catch (error) {
     console.error("Order error:", error);
     return NextResponse.json(

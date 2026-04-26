@@ -221,6 +221,28 @@ export async function createProductCategoryAction(formData: FormData) {
   return { success: true };
 }
 
+export async function updateProductCategoryAction(id: string, formData: FormData) {
+  const parsed = categorySchema.safeParse({
+    name: formData.get("name"),
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Categoria inválida." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("product_categories").update(parsed.data).eq("id", id);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/produtos");
+  revalidatePath("/");
+  revalidatePath("/cardapio");
+  return { success: true };
+}
+
 export async function createProductStockAdjustmentAction(formData: FormData) {
   const productId = String(formData.get("product_id") ?? "");
   const movementType = String(formData.get("movement_type") ?? "");
