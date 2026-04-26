@@ -17,6 +17,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
+type StorefrontOrderResult = {
+  id: string;
+  order_code: string;
+};
+
 const orderSchema = z.object({
   customerName: z.string().min(2),
   customerPhone: z.string().min(6),
@@ -163,7 +168,8 @@ export async function POST(request: Request) {
           })}${payload.addressReference ? ` | Referência: ${payload.addressReference}` : ""}`
         : "Pedido iniciado pelo site público para retirada no ateliê.";
 
-    const { data: saleId, error: orderError } = await supabase.rpc(
+    const { data: orderRows, error: orderError } = await supabase
+      .rpc(
       "create_storefront_order",
       {
         p_customer_name: payload.customerName,
@@ -194,20 +200,13 @@ export async function POST(request: Request) {
           notes: item.itemNotes ?? null,
         })),
       }
-    );
+      )
+      .returns<StorefrontOrderResult[]>();
 
-    if (orderError || !saleId) {
+    const saleRecord = Array.isArray(orderRows) ? orderRows[0] : null;
+
+    if (orderError || !saleRecord?.id || !saleRecord?.order_code) {
       throw new Error(orderError?.message ?? "Não foi possível registrar o pedido.");
-    }
-
-    const { data: saleRecord, error: saleRecordError } = await supabase
-      .from("sales")
-      .select("id, order_code")
-      .eq("id", saleId)
-      .maybeSingle();
-
-    if (saleRecordError || !saleRecord?.order_code) {
-      throw new Error(saleRecordError?.message ?? "Não foi possível localizar o número do pedido.");
     }
 
     const message = buildWhatsAppMessage({
