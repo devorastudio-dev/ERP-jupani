@@ -4,6 +4,13 @@ export interface NamedCategory {
   usage_count?: number;
 }
 
+export interface PanShapeRow {
+  code: string;
+  name: string;
+  estimated_servings: number;
+  usage_count?: number;
+}
+
 export interface ProductRow {
   id: string;
   name: string;
@@ -33,6 +40,7 @@ export interface ProductRow {
   is_storefront_healthy?: boolean;
   is_storefront_lactose_free?: boolean;
   is_storefront_gluten_free?: boolean;
+  pan_shape?: PanShapeRow | null;
   categories?: NamedCategory[] | null;
   recipes?: Array<{
     id: string;

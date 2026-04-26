@@ -7,22 +7,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createProductAction, updateProductAction } from "@/features/products/actions";
-import { PAN_SHAPE_PRESETS, getPanShapePreset } from "@/features/products/lib/pan-shapes";
 import { productSchema } from "@/features/products/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/utils";
-import type { NamedCategory, ProductRow } from "@/types/entities";
+import type { NamedCategory, PanShapeRow, ProductRow } from "@/types/entities";
 
 interface ProductFormProps {
   categories: NamedCategory[];
+  panShapes: PanShapeRow[];
   product?: ProductRow | null;
   onSuccess?: () => void;
 }
 
-export function ProductForm({ categories, product, onSuccess }: ProductFormProps) {
+export function ProductForm({ categories, panShapes, product, onSuccess }: ProductFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -94,7 +94,7 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
   const estimatedServings = Number(product?.estimated_servings ?? 0);
   const estimatedKcalPerServing = Number(product?.estimated_kcal_per_serving ?? 0);
   const panShapeCode = String(watch("pan_shape_code") ?? "");
-  const selectedPanShape = getPanShapePreset(panShapeCode);
+  const selectedPanShape = panShapes.find((panShape) => panShape.code === panShapeCode) ?? null;
   const photoPath = watch("photo_path")?.trim() || "";
   const filePreviewUrl = useMemo(
     () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
@@ -213,16 +213,16 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
           className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
         >
           <option value="">Sem padrão</option>
-          {PAN_SHAPE_PRESETS.map((preset) => (
-            <option key={preset.code} value={preset.code}>
-              {preset.label}
+          {panShapes.map((panShape) => (
+            <option key={panShape.code} value={panShape.code}>
+              {panShape.name}
             </option>
           ))}
         </select>
         <p className="text-xs text-stone-500">
           {selectedPanShape
-            ? `Faixa padrão: ${selectedPanShape.minSlices} a ${selectedPanShape.maxSlices} fatias.`
-            : "Se selecionar uma forma, o sistema usa a média de fatias dela para calcular as porções."}
+            ? `Rendimento estimado da forma: ${Number(selectedPanShape.estimated_servings).toFixed(1)} porções.`
+            : "Se selecionar uma forma, o sistema usa o rendimento cadastrado nela para calcular as porções."}
         </p>
       </div>
       <div className="space-y-2">

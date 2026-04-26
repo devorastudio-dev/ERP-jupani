@@ -31,6 +31,10 @@ type ProductMetricsRow = {
   yield_quantity: number | null;
   unit: string;
   pan_shape_code: string | null;
+  product_pan_shapes?: {
+    code: string;
+    estimated_servings: number | null;
+  } | null;
   serving_reference_quantity: number | null;
   serving_reference_unit: string | null;
   public_ingredients_text: string | null;
@@ -71,7 +75,7 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
 
   const { data: product, error: productError } = await supabase
     .from("products")
-    .select("id, yield_quantity, unit, pan_shape_code, serving_reference_quantity, serving_reference_unit, public_ingredients_text")
+    .select("id, yield_quantity, unit, pan_shape_code, serving_reference_quantity, serving_reference_unit, public_ingredients_text, product_pan_shapes(code, estimated_servings)")
     .eq("id", recipe.product_id)
     .single<ProductMetricsRow>();
 
@@ -92,7 +96,7 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
     ingredientsMap,
     yieldQuantity: Number(product.yield_quantity ?? 0),
     yieldUnit: product.unit,
-    panShapeCode: product.pan_shape_code,
+    panShapeServings: Number(product.product_pan_shapes?.estimated_servings ?? 0),
     servingReferenceQuantity: Number(product.serving_reference_quantity ?? 0),
     servingReferenceUnit: product.serving_reference_unit,
   });

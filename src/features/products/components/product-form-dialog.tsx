@@ -5,14 +5,15 @@ import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProductForm } from "@/features/products/components/product-form";
-import type { NamedCategory, ProductRow } from "@/types/entities";
+import type { NamedCategory, PanShapeRow, ProductRow } from "@/types/entities";
 
 interface ProductFormDialogProps {
   product: ProductRow;
   categories: NamedCategory[];
+  panShapes: PanShapeRow[];
 }
 
-export function ProductFormDialog({ product, categories }: ProductFormDialogProps) {
+export function ProductFormDialog({ product, categories, panShapes }: ProductFormDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -29,7 +30,7 @@ export function ProductFormDialog({ product, categories }: ProductFormDialogProp
             Ajuste preço, categoria, rendimento e dados comerciais sem perder o histórico de custo do produto.
           </DialogDescription>
         </DialogHeader>
-        <ProductForm categories={categories} product={product} onSuccess={() => setOpen(false)} />
+        <ProductForm categories={categories} panShapes={panShapes} product={product} onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

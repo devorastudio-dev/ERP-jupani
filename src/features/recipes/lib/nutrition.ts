@@ -1,5 +1,4 @@
 import { areUnitsCompatible, convertQuantity } from "@/lib/measurement";
-import { getAverageSlicesByPanShape } from "@/features/products/lib/pan-shapes";
 
 type NutritionIngredientInput = {
   unit?: string | null;
@@ -19,13 +18,13 @@ const roundMetric = (value: number) => Math.round(value * 100) / 100;
 export function calculateEstimatedServings(input: {
   yieldQuantity?: number | null;
   yieldUnit?: string | null;
-  panShapeCode?: string | null;
+  panShapeServings?: number | null;
   servingReferenceQuantity?: number | null;
   servingReferenceUnit?: string | null;
 }) {
-  const averageSlices = getAverageSlicesByPanShape(input.panShapeCode);
-  if (averageSlices > 0) {
-    return roundMetric(averageSlices);
+  const panShapeServings = Number(input.panShapeServings ?? 0);
+  if (panShapeServings > 0) {
+    return roundMetric(panShapeServings);
   }
 
   const yieldQuantity = Number(input.yieldQuantity ?? 0);
@@ -53,7 +52,7 @@ export function calculateRecipeNutrition(input: {
   ingredientsMap: Map<string, NutritionIngredientInput>;
   yieldQuantity?: number | null;
   yieldUnit?: string | null;
-  panShapeCode?: string | null;
+  panShapeServings?: number | null;
   servingReferenceQuantity?: number | null;
   servingReferenceUnit?: string | null;
 }) {
@@ -85,7 +84,7 @@ export function calculateRecipeNutrition(input: {
   const estimatedServings = calculateEstimatedServings({
     yieldQuantity: input.yieldQuantity,
     yieldUnit: input.yieldUnit,
-    panShapeCode: input.panShapeCode,
+    panShapeServings: input.panShapeServings,
     servingReferenceQuantity: input.servingReferenceQuantity,
     servingReferenceUnit: input.servingReferenceUnit,
   });

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getProductsPageData } from "@/features/products/server/queries";
 import { ProductCategoriesCard } from "@/features/products/components/product-categories-card";
 import { ProductForm } from "@/features/products/components/product-form";
+import { ProductPanShapesCard } from "@/features/products/components/product-pan-shapes-card";
 import { ProductStockAdjustmentCard } from "@/features/products/components/product-stock-adjustment-card";
 import { ProductsTable } from "@/features/products/components/products-table";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
@@ -21,7 +22,7 @@ export default async function ProductsPage({
   requireModule(profile, "produtos");
 
   const resolvedSearchParams = await searchParams;
-  const { products, categories, productStockMovements } = await getProductsPageData();
+  const { products, categories, panShapes, productStockMovements } = await getProductsPageData();
   const selectedCategory = resolvedSearchParams?.category ?? "all";
   const filteredProducts =
     selectedCategory === "all"
@@ -69,7 +70,7 @@ export default async function ProductsPage({
                   : "",
               descricao: product.description ?? "",
               rendimento: product.yield_quantity ?? "",
-              forma: product.pan_shape_code ?? "",
+              forma: product.pan_shape?.name ?? product.pan_shape_code ?? "",
               porcoes_estimadas: product.estimated_servings ?? "",
               kcal_total_estimado: product.estimated_kcal_total ?? "",
               kcal_por_porcao: product.estimated_kcal_per_serving ?? "",
@@ -113,10 +114,11 @@ export default async function ProductsPage({
               <CardTitle>Novo produto</CardTitle>
             </CardHeader>
             <CardContent>
-              <ProductForm categories={categories} />
+              <ProductForm categories={categories} panShapes={panShapes} />
             </CardContent>
           </Card>
           <ProductStockAdjustmentCard products={products} movements={productStockMovements} />
+          <ProductPanShapesCard panShapes={panShapes} />
           <ProductCategoriesCard categories={categories} />
         </div>
 
@@ -154,7 +156,7 @@ export default async function ProductsPage({
             </form>
           </CardHeader>
           <CardContent>
-            <ProductsTable products={filteredProducts} categories={categories} />
+            <ProductsTable products={filteredProducts} categories={categories} panShapes={panShapes} />
           </CardContent>
         </Card>
       </section>

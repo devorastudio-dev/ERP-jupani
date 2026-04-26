@@ -27,4 +27,10 @@ export const productSchema = z.object({
   is_storefront_gluten_free: z.coerce.boolean().default(false),
 });
 
+export const panShapeSchema = z.object({
+  name: z.string().min(3, "Informe o nome da forma."),
+  estimated_servings: z.coerce.number().positive("Informe um rendimento maior que zero."),
+});
+
 export type ProductSchema = z.infer<typeof productSchema>;
+export type PanShapeSchema = z.infer<typeof panShapeSchema>;

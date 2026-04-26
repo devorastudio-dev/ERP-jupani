@@ -2,7 +2,7 @@
 
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
-import { productSchema } from "@/features/products/schema";
+import { panShapeSchema, productSchema } from "@/features/products/schema";
 import { recalculateRecipeAndProductMetrics } from "@/features/recipes/server/recalculate-metrics";
 import { categorySchema } from "@/features/recipes/schema";
 import { createClient } from "@/server/supabase/server";
@@ -10,6 +10,44 @@ import { createClient } from "@/server/supabase/server";
 const PRODUCT_IMAGES_BUCKET = "product-images";
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+function slugifyPanShapeName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+async function revalidateProductRelatedPaths() {
+  revalidatePath("/produtos");
+  revalidatePath("/fichas-tecnicas");
+  revalidatePath("/site");
+  revalidatePath("/");
+  revalidatePath("/cardapio");
+  revalidatePath("/saudavel");
+}
+
+async function recalculateRecipesByProductIds(productIds: string[]) {
+  if (!productIds.length) {
+    return;
+  }
+
+  const supabase = await createClient();
+  const { data: recipes, error } = await supabase
+    .from("recipes")
+    .select("id")
+    .in("product_id", productIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const recipeIds = Array.from(new Set((recipes ?? []).map((recipe) => recipe.id).filter(Boolean)));
+  await Promise.all(recipeIds.map((recipeId) => recalculateRecipeAndProductMetrics(recipeId)));
+}
 
 function normalizeProductPayload(values: ReturnType<typeof productSchema.parse>) {
   const normalizedCategoryIds = Array.from(
@@ -170,12 +208,7 @@ export async function createProductAction(formData: FormData) {
     return { success: false, error: syncError instanceof Error ? syncError.message : "Não foi possível salvar as categorias." };
   }
 
-  revalidatePath("/produtos");
-  revalidatePath("/fichas-tecnicas");
-  revalidatePath("/site");
-  revalidatePath("/");
-  revalidatePath("/cardapio");
-  revalidatePath("/saudavel");
+  await revalidateProductRelatedPaths();
   return { success: true };
 }
 
@@ -253,12 +286,7 @@ export async function updateProductAction(id: string, formData: FormData) {
     await recalculateRecipeAndProductMetrics(recipe.id);
   }
 
-  revalidatePath("/produtos");
-  revalidatePath("/fichas-tecnicas");
-  revalidatePath("/site");
-  revalidatePath("/");
-  revalidatePath("/cardapio");
-  revalidatePath("/saudavel");
+  await revalidateProductRelatedPaths();
   return { success: true };
 }
 
@@ -298,10 +326,7 @@ export async function updateProductCategoryAction(id: string, formData: FormData
     return { success: false, error: error.message };
   }
 
-  revalidatePath("/produtos");
-  revalidatePath("/");
-  revalidatePath("/cardapio");
-  revalidatePath("/saudavel");
+  await revalidateProductRelatedPaths();
   return { success: true };
 }
 
@@ -358,11 +383,97 @@ export async function deleteProductCategoryAction(id: string) {
     return { success: false, error: deleteCategoryError.message };
   }
 
-  revalidatePath("/produtos");
-  revalidatePath("/site");
-  revalidatePath("/");
-  revalidatePath("/cardapio");
-  revalidatePath("/saudavel");
+  await revalidateProductRelatedPaths();
+  return { success: true };
+}
+
+export async function createProductPanShapeAction(formData: FormData) {
+  const parsed = panShapeSchema.safeParse({
+    name: formData.get("name"),
+    estimated_servings: formData.get("estimated_servings"),
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Forma inválida." };
+  }
+
+  const supabase = await createClient();
+  const baseCode = slugifyPanShapeName(parsed.data.name);
+  const code = baseCode ? `${baseCode}_${randomUUID().slice(0, 6)}` : randomUUID().replace(/-/g, "").slice(0, 12);
+  const { error } = await supabase.from("product_pan_shapes").insert({
+    code,
+    ...parsed.data,
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  await revalidateProductRelatedPaths();
+  return { success: true };
+}
+
+export async function updateProductPanShapeAction(code: string, formData: FormData) {
+  const parsed = panShapeSchema.safeParse({
+    name: formData.get("name"),
+    estimated_servings: formData.get("estimated_servings"),
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Forma inválida." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("product_pan_shapes").update(parsed.data).eq("code", code);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  const { data: affectedProducts, error: affectedProductsError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("pan_shape_code", code);
+
+  if (affectedProductsError) {
+    return { success: false, error: affectedProductsError.message };
+  }
+
+  await recalculateRecipesByProductIds((affectedProducts ?? []).map((product) => product.id));
+  await revalidateProductRelatedPaths();
+  return { success: true };
+}
+
+export async function deleteProductPanShapeAction(code: string) {
+  const supabase = await createClient();
+
+  const { data: linkedProducts, error: linkedProductsError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("pan_shape_code", code);
+
+  if (linkedProductsError) {
+    return { success: false, error: linkedProductsError.message };
+  }
+
+  const productIds = (linkedProducts ?? []).map((product) => product.id);
+
+  const { error: clearProductsError } = await supabase
+    .from("products")
+    .update({ pan_shape_code: null })
+    .eq("pan_shape_code", code);
+
+  if (clearProductsError) {
+    return { success: false, error: clearProductsError.message };
+  }
+
+  const { error: deleteError } = await supabase.from("product_pan_shapes").delete().eq("code", code);
+  if (deleteError) {
+    return { success: false, error: deleteError.message };
+  }
+
+  await recalculateRecipesByProductIds(productIds);
+  await revalidateProductRelatedPaths();
   return { success: true };
 }
 

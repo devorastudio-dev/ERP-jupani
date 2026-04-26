@@ -5,14 +5,16 @@ import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { ProductFormDialog } from "@/features/products/components/product-form-dialog";
-import type { NamedCategory, ProductRow } from "@/types/entities";
+import type { NamedCategory, PanShapeRow, ProductRow } from "@/types/entities";
 
 export function ProductsTable({
   products,
   categories,
+  panShapes,
 }: {
   products: ProductRow[];
   categories: NamedCategory[];
+  panShapes: PanShapeRow[];
 }) {
   return (
     <DataTable
@@ -116,6 +118,11 @@ export function ProductsTable({
               : "-",
         },
         {
+          accessorKey: "pan_shape",
+          header: "Forma",
+          cell: ({ row }) => row.original.pan_shape?.name ?? "-",
+        },
+        {
           accessorKey: "is_active",
           header: "Status",
           cell: ({ row }) => (
@@ -152,7 +159,7 @@ export function ProductsTable({
         {
           id: "actions",
           header: "",
-          cell: ({ row }) => <ProductFormDialog product={row.original} categories={categories} />,
+          cell: ({ row }) => <ProductFormDialog product={row.original} categories={categories} panShapes={panShapes} />,
         },
       ]}
     />

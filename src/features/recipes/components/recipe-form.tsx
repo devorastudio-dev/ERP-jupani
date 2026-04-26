@@ -180,7 +180,7 @@ export function RecipeForm({
     ingredientsMap,
     yieldQuantity: Number(selectedProduct?.yield_quantity ?? 0),
     yieldUnit: selectedProduct?.unit,
-    panShapeCode: selectedProduct?.pan_shape_code,
+    panShapeServings: Number(selectedProduct?.pan_shape?.estimated_servings ?? 0),
     servingReferenceQuantity: Number(selectedProduct?.serving_reference_quantity ?? 0),
     servingReferenceUnit: selectedProduct?.serving_reference_unit,
   });

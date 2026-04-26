@@ -1,6 +1,6 @@
 import { createClient } from "@/server/supabase/server";
 import { safeQuery } from "@/server/db/safe-query";
-import type { NamedCategory, ProductRow, ProductStockMovementRow } from "@/types/entities";
+import type { NamedCategory, PanShapeRow, ProductRow, ProductStockMovementRow } from "@/types/entities";
 
 type ProductQueryRow = Omit<ProductRow, "categories" | "category_ids"> & {
   product_category_links?: Array<{
@@ -28,7 +28,7 @@ const mapProductCategories = (product: ProductQueryRow): ProductRow => {
 export async function getProductsPageData() {
   const supabase = await createClient();
 
-  const [products, categories, productStockMovements] = await Promise.all([
+  const [products, categories, productStockMovements, panShapes] = await Promise.all([
     safeQuery<ProductQueryRow[]>(
       supabase
         .from("products")
@@ -47,14 +47,27 @@ export async function getProductsPageData() {
         .limit(20),
       [],
     ),
+    safeQuery<PanShapeRow[]>(
+      supabase.from("product_pan_shapes").select("code, name, estimated_servings").order("name"),
+      [],
+    ),
   ]);
 
-  const normalizedProducts = products.map(mapProductCategories);
+  const panShapesByCode = new Map(panShapes.map((panShape) => [panShape.code, panShape]));
+  const normalizedProducts = products.map((product) => ({
+    ...mapProductCategories(product),
+    pan_shape: product.pan_shape_code ? panShapesByCode.get(product.pan_shape_code) ?? null : null,
+  }));
   const categoryUsage = new Map<string, number>();
+  const panShapeUsage = new Map<string, number>();
 
   for (const product of normalizedProducts) {
     for (const category of product.categories ?? []) {
       categoryUsage.set(category.id, (categoryUsage.get(category.id) ?? 0) + 1);
+    }
+
+    if (product.pan_shape_code) {
+      panShapeUsage.set(product.pan_shape_code, (panShapeUsage.get(product.pan_shape_code) ?? 0) + 1);
     }
   }
 
@@ -63,6 +76,10 @@ export async function getProductsPageData() {
     categories: categories.map((category) => ({
       ...category,
       usage_count: categoryUsage.get(category.id) ?? 0,
+    })),
+    panShapes: panShapes.map((panShape) => ({
+      ...panShape,
+      usage_count: panShapeUsage.get(panShape.code) ?? 0,
     })),
     productStockMovements,
   };
