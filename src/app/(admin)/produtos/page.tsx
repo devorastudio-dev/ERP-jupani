@@ -50,14 +50,39 @@ export default async function ProductsPage({
           <ExportCsvButton
             filename="catalogo-produtos.csv"
             rows={filteredProducts.map((product) => ({
+              id: product.id,
               nome: product.name,
               categorias: product.categories?.map((category) => category.name).join(", ") ?? "",
               tipo: product.fulfillment_type,
+              unidade: product.unit,
               preco_venda: product.sale_price,
               custo_estimado: product.estimated_cost,
+              margem_estimada_valor:
+                Number(product.sale_price ?? 0) - Number(product.estimated_cost ?? 0),
+              margem_estimada_percentual:
+                Number(product.sale_price ?? 0) > 0
+                  ? (
+                      ((Number(product.sale_price ?? 0) - Number(product.estimated_cost ?? 0)) /
+                        Number(product.sale_price ?? 0)) *
+                      100
+                    ).toFixed(1)
+                  : "",
+              descricao: product.description ?? "",
+              rendimento: product.yield_quantity ?? "",
+              forma: product.pan_shape_code ?? "",
+              porcoes_estimadas: product.estimated_servings ?? "",
+              kcal_total_estimado: product.estimated_kcal_total ?? "",
+              kcal_por_porcao: product.estimated_kcal_per_serving ?? "",
+              ingredientes_publicos: product.public_ingredients_text ?? "",
               estoque_acabado: product.finished_stock_quantity ?? "",
               estoque_minimo_acabado: product.minimum_finished_stock ?? "",
               ativo: product.is_active ? "sim" : "nao",
+              publicado_no_site: product.show_on_storefront ? "sim" : "nao",
+              destaque_site: product.is_storefront_featured ? "sim" : "nao",
+              favorito_site: product.is_storefront_favorite ? "sim" : "nao",
+              fitness_site: product.is_storefront_healthy ? "sim" : "nao",
+              imagem: product.photo_path ?? "",
+              observacoes: product.notes ?? "",
             }))}
           />
         }

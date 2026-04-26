@@ -28,6 +28,7 @@ export default async function IngredientsPage() {
             <ExportCsvButton
               filename="insumos.csv"
               rows={ingredients.map((ingredient) => ({
+                id: ingredient.id,
                 nome: ingredient.name,
                 categoria: ingredient.categories?.name ?? "",
                 unidade: ingredient.unit,
@@ -35,6 +36,9 @@ export default async function IngredientsPage() {
                 estoque_minimo: ingredient.minimum_stock ?? 0,
                 custo_medio: formatCurrency(Number(ingredient.average_cost ?? 0)),
                 valor_estimado_estoque: formatCurrency(Number(ingredient.stock_quantity ?? 0) * Number(ingredient.average_cost ?? 0)),
+                quantidade_nutricional: ingredient.nutrition_quantity ?? "",
+                unidade_nutricional: ingredient.nutrition_unit ?? "",
+                kcal: ingredient.kcal_amount ?? "",
                 vencimento: formatDate(ingredient.expiration_date),
                 observacoes: ingredient.notes ?? "",
               }))}
@@ -42,10 +46,12 @@ export default async function IngredientsPage() {
             <ExportCsvButton
               filename="movimentacoes-insumos.csv"
               rows={movements.map((movement) => ({
+                id: movement.id,
                 insumo: movement.ingredient_name ?? "",
                 tipo_movimentacao: movement.movement_type,
                 quantidade: movement.quantity ?? 0,
                 data: formatDate(movement.created_at, "DD/MM/YYYY HH:mm"),
+                motivo: movement.reason ?? "",
               }))}
               label="Exportar movimentações"
             />

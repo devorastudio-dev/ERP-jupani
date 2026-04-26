@@ -46,6 +46,7 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
             <ExportCsvButton
               filename={`pedidos-${sourceFilter}.csv`}
               rows={sales.map((sale) => ({
+                id: sale.id,
                 numero_pedido: sale.order_code ?? "",
                 cliente: sale.customer_name ?? "",
                 telefone: sale.phone ?? "",
@@ -54,11 +55,36 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
                 atendimento: sale.order_type ?? "",
                 status: sale.status,
                 entrega: formatDate(sale.delivery_date, "DD/MM/YYYY HH:mm"),
+                taxa_entrega: formatCurrency(Number(sale.delivery_fee ?? 0)),
+                desconto: formatCurrency(Number(sale.discount_amount ?? 0)),
                 total: formatCurrency(Number(sale.total_amount ?? 0)),
                 recebido: formatCurrency(Number(sale.paid_amount ?? 0)),
                 pendente: formatCurrency(Number(sale.pending_amount ?? 0)),
                 forma_pagamento: sale.payment_method ?? "",
-                categorias_itens: sale.sale_items?.map((item) => item.product_name).join(" | ") ?? "",
+                fiscal: sale.fiscal_status ?? "",
+                estoque_baixado: sale.stock_deducted ? "sim" : "nao",
+                itens: sale.sale_items?.map((item) => item.product_name).join(" | ") ?? "",
+                itens_detalhados:
+                  sale.sale_items
+                    ?.map(
+                      (item) =>
+                        `${item.product_name} (${item.quantity} x ${formatCurrency(Number(item.unit_price ?? 0))} = ${formatCurrency(Number(item.total_price ?? 0))})`,
+                    )
+                    .join(" | ") ?? "",
+                pagamentos:
+                  sale.sale_payments
+                    ?.map(
+                      (payment) =>
+                        `${payment.payment_method}: ${formatCurrency(Number(payment.amount ?? 0))} em ${formatDate(payment.payment_date, "DD/MM/YYYY HH:mm")}`,
+                    )
+                    .join(" | ") ?? "",
+                historico_status:
+                  sale.order_status_history
+                    ?.map(
+                      (entry) =>
+                        `${entry.new_status} em ${formatDate(entry.created_at, "DD/MM/YYYY HH:mm")}${entry.notes ? ` (${entry.notes})` : ""}`,
+                    )
+                    .join(" | ") ?? "",
                 observacoes_cliente: sale.notes ?? "",
                 observacoes_internas: sale.internal_notes ?? "",
               }))}

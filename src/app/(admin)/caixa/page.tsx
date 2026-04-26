@@ -26,6 +26,7 @@ export default async function CashPage() {
             <ExportCsvButton
               filename="caixa-movimentacoes.csv"
               rows={movements.map((movement) => ({
+                id: movement.id,
                 descricao: movement.description,
                 tipo: movement.movement_type,
                 categoria: movement.category_name ?? "",
@@ -37,6 +38,7 @@ export default async function CashPage() {
             <ExportCsvButton
               filename="caixa-sessoes.csv"
               rows={sessions.map((session) => ({
+                id: session.id,
                 abertura: formatDate(session.opened_at, "DD/MM/YYYY HH:mm"),
                 fechamento: formatDate(session.closed_at, "DD/MM/YYYY HH:mm"),
                 status: session.status,
@@ -48,9 +50,11 @@ export default async function CashPage() {
             <ExportCsvButton
               filename="contas-a-pagar.csv"
               rows={payables.map((payable) => ({
+                id: payable.id,
                 descricao: payable.description,
                 valor_total: formatCurrency(Number(payable.amount ?? 0)),
                 valor_pago: formatCurrency(Number(payable.paid_amount ?? 0)),
+                valor_pendente: formatCurrency(Number(payable.amount ?? 0) - Number(payable.paid_amount ?? 0)),
                 vencimento: formatDate(payable.due_date),
                 status: payable.status,
                 origem: payable.origin ?? "",
@@ -61,9 +65,11 @@ export default async function CashPage() {
             <ExportCsvButton
               filename="contas-a-receber.csv"
               rows={receivables.map((receivable) => ({
+                id: receivable.id,
                 descricao: receivable.description,
                 valor_total: formatCurrency(Number(receivable.amount ?? 0)),
                 valor_recebido: formatCurrency(Number(receivable.received_amount ?? 0)),
+                valor_pendente: formatCurrency(Number(receivable.amount ?? 0) - Number(receivable.received_amount ?? 0)),
                 vencimento: formatDate(receivable.due_date),
                 status: receivable.status,
                 origem: receivable.origin ?? "",
