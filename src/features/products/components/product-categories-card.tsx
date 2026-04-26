@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createProductCategoryAction, updateProductCategoryAction } from "@/features/products/actions";
+import {
+  createProductCategoryAction,
+  deleteProductCategoryAction,
+  updateProductCategoryAction,
+} from "@/features/products/actions";
 import { categorySchema, type CategorySchema } from "@/features/recipes/schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,6 +76,27 @@ export function ProductCategoriesCard({ categories }: { categories: NamedCategor
     });
   };
 
+  const removeCategory = (category: NamedCategory) => {
+    if (!window.confirm(`Excluir a categoria "${category.name}"? Os vínculos com produtos serão removidos.`)) {
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await deleteProductCategoryAction(category.id);
+
+      if (!result?.success) {
+        toast.error(result?.error ?? "Não foi possível excluir a categoria.");
+        return;
+      }
+
+      toast.success("Categoria excluída.");
+      if (editingCategoryId === category.id) {
+        cancelEditing();
+      }
+      router.refresh();
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -129,7 +154,10 @@ export function ProductCategoriesCard({ categories }: { categories: NamedCategor
                   </>
                 ) : (
                   <>
-                    <Badge variant="muted">{category.name}</Badge>
+                    <Badge variant="muted">
+                      {category.name}
+                      {typeof category.usage_count === "number" ? ` • ${category.usage_count} produto(s)` : ""}
+                    </Badge>
                     <Button
                       type="button"
                       size="sm"
@@ -138,6 +166,15 @@ export function ProductCategoriesCard({ categories }: { categories: NamedCategor
                       onClick={() => startEditing(category)}
                     >
                       Editar
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={pending}
+                      onClick={() => removeCategory(category)}
+                    >
+                      Excluir
                     </Button>
                   </>
                 )}

@@ -28,7 +28,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       </Link>
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex flex-wrap gap-2">
-          <Badge>{getCategoryLabel(product.category)}</Badge>
+          {(product.categories.length ? product.categories : [product.category]).map((category) => (
+            <Badge key={category}>{getCategoryLabel(category)}</Badge>
+          ))}
           {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
           {product.isHealthy ? <Badge variant="healthy">Fitness</Badge> : null}
         </div>

@@ -25,7 +25,10 @@ const PRODUCT_SELECT = `
   public_ingredients_text,
   created_at,
   finished_stock_quantity,
-  categories:product_categories(name)
+  product_category_links(
+    category_id,
+    product_categories(id, name)
+  )
 `;
 
 type StorefrontProductRow = {
@@ -49,7 +52,13 @@ type StorefrontProductRow = {
   public_ingredients_text: string | null;
   created_at: string;
   finished_stock_quantity: number | null;
-  categories: { name?: string | null } | null;
+  product_category_links: Array<{
+    category_id: string;
+    product_categories: Array<{
+      id: string;
+      name: string;
+    }> | null;
+  }> | null;
 };
 
 const normalizeText = (value: string) =>
@@ -85,7 +94,14 @@ export const buildProductSlug = (id: string, name: string) =>
   `${id}--${slugify(name) || "produto"}`;
 
 const mapProduct = (row: StorefrontProductRow): ProductCardData => {
-  const categoryLabel = row.categories?.name?.trim() || "Sem categoria";
+  const categoryList =
+    row.product_category_links
+      ?.flatMap((link) => link.product_categories ?? [])
+      .filter((category): category is { id: string; name: string } => Boolean(category?.id && category?.name))
+      .map((category) => category.name.trim())
+      .filter(Boolean) ?? [];
+  const categoryIds = row.product_category_links?.map((link) => link.category_id).filter(Boolean) ?? [];
+  const categoryLabel = categoryList[0] || "Sem categoria";
   const image = row.photo_path?.trim() || buildFallbackImage(categoryLabel);
   const displayIngredients = row.public_ingredients_text?.trim() || null;
   const availableForOrder =
@@ -101,7 +117,9 @@ const mapProduct = (row: StorefrontProductRow): ProductCardData => {
     price: Number(row.sale_price ?? 0),
     images: [image],
     category: categoryLabel,
-    categoryId: row.category_id,
+    categories: categoryList,
+    categoryId: row.category_id ?? categoryIds[0] ?? null,
+    categoryIds,
     active: row.is_active,
     fulfillmentType: row.fulfillment_type,
     unit: row.unit,
@@ -175,6 +193,25 @@ export async function getStorefrontProducts({
   includeInactive?: boolean;
 }) {
   const supabase = await createClient();
+  let categoryProductIds: string[] | null = null;
+
+  if (category && category !== "all") {
+    const { data: categoryLinks, error: categoryLinksError } = await supabase
+      .from("product_category_links")
+      .select("product_id")
+      .eq("category_id", category);
+
+    if (categoryLinksError) {
+      console.error(categoryLinksError.message);
+      return { items: [] as ProductCardData[], total: 0, totalPages: 1 };
+    }
+
+    categoryProductIds = Array.from(new Set((categoryLinks ?? []).map((link) => link.product_id)));
+    if (!categoryProductIds.length) {
+      return { items: [] as ProductCardData[], total: 0, totalPages: 1 };
+    }
+  }
+
   let builder = supabase.from("products").select(PRODUCT_SELECT, { count: "exact" });
 
   if (!includeInactive) {
@@ -182,8 +219,8 @@ export async function getStorefrontProducts({
     builder = builder.eq("show_on_storefront", true);
   }
 
-  if (category && category !== "all") {
-    builder = builder.eq("category_id", category);
+  if (categoryProductIds) {
+    builder = builder.in("id", categoryProductIds);
   }
 
   if (featured) {

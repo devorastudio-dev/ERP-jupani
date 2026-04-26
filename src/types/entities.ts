@@ -1,12 +1,14 @@
 export interface NamedCategory {
   id: string;
   name: string;
+  usage_count?: number;
 }
 
 export interface ProductRow {
   id: string;
   name: string;
   category_id?: string | null;
+  category_ids?: string[];
   description?: string | null;
   sale_price: number | null;
   estimated_cost: number | null;
@@ -29,7 +31,7 @@ export interface ProductRow {
   is_storefront_featured?: boolean;
   is_storefront_favorite?: boolean;
   is_storefront_healthy?: boolean;
-  categories?: { name?: string | null } | null;
+  categories?: NamedCategory[] | null;
   recipes?: Array<{
     id: string;
     theoretical_cost?: number | null;

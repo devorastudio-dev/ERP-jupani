@@ -146,7 +146,10 @@ export default async function SiteAdminPage() {
                       {isUnavailable ? <Badge variant="warning">Indisponível agora</Badge> : null}
                     </div>
                     <p className="text-sm text-stone-500">
-                      {product.categories?.name ?? "Sem categoria"} • {product.fulfillment_type.replaceAll("_", " ")}
+                      {product.categories.length
+                        ? product.categories.map((category) => category.name).join(", ")
+                        : "Sem categoria"}{" "}
+                      • {product.fulfillment_type.replaceAll("_", " ")}
                     </p>
                     <p className="text-sm text-stone-500">
                       {product.photo_path?.trim() ? `Imagem: ${product.photo_path}` : "Sem imagem configurada"}

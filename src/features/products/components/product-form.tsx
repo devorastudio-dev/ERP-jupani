@@ -48,6 +48,7 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       is_storefront_featured: false,
       is_storefront_favorite: false,
       is_storefront_healthy: false,
+      category_ids: [],
     },
   });
 
@@ -55,6 +56,7 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
     reset({
       name: product?.name ?? "",
       category_id: product?.category_id ?? "",
+      category_ids: product?.category_ids ?? [],
       description: product?.description ?? "",
       sale_price: Number(product?.sale_price ?? 0),
       estimated_cost: Number(product?.estimated_cost ?? 0),
@@ -227,7 +229,7 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
         <Input id="serving_reference_unit" placeholder="g, ml, un" {...register("serving_reference_unit")} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="category_id">Categoria</Label>
+        <Label htmlFor="category_id">Categoria principal</Label>
         <select
           id="category_id"
           {...register("category_id")}
@@ -240,6 +242,24 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
             </option>
           ))}
         </select>
+      </div>
+      <div className="space-y-2 xl:col-span-2">
+        <Label>Multicategorias</Label>
+        <div className="grid gap-3 rounded-3xl border border-rose-100 bg-[#fff8f4] p-4 md:grid-cols-2">
+          {categories.length ? (
+            categories.map((category) => (
+              <label key={category.id} className="flex items-center gap-2 text-sm text-stone-600">
+                <input type="checkbox" value={category.id} {...register("category_ids")} />
+                {category.name}
+              </label>
+            ))
+          ) : (
+            <p className="text-sm text-stone-500">Cadastre categorias para vincular ao produto.</p>
+          )}
+        </div>
+        <p className="text-xs text-stone-500">
+          Você pode marcar várias categorias. A categoria principal acima será usada como referência principal no sistema.
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="fulfillment_type">Tipo</Label>

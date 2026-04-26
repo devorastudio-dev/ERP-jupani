@@ -15,14 +15,18 @@ type SiteProductRow = {
   is_storefront_favorite: boolean;
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   finished_stock_quantity: number | null;
-  categories: { name?: string | null } | null;
+  categories: Array<{ id: string; name: string }>;
 };
 
 export async function getSiteAdminPageData() {
   const supabase = await createClient();
 
   const [products, settings] = await Promise.all([
-    safeQuery<SiteProductRow[]>(
+    safeQuery<Array<Omit<SiteProductRow, "categories"> & {
+      product_category_links?: Array<{
+        product_categories?: Array<{ id: string; name: string }> | null;
+      }> | null;
+    }>>(
       supabase
         .from("products")
         .select(`
@@ -36,7 +40,7 @@ export async function getSiteAdminPageData() {
           is_storefront_favorite,
           fulfillment_type,
           finished_stock_quantity,
-          categories:product_categories(name)
+          product_category_links(product_categories(id, name))
         `)
         .order("name"),
       [],
@@ -44,10 +48,18 @@ export async function getSiteAdminPageData() {
     getStorefrontSettings(),
   ]);
 
-  const publishedProducts = products.filter((product) => product.show_on_storefront);
+  const normalizedProducts: SiteProductRow[] = products.map((product) => ({
+    ...product,
+    categories:
+      product.product_category_links
+        ?.flatMap((link) => link.product_categories ?? [])
+        .filter((category): category is { id: string; name: string } => Boolean(category?.id && category?.name)) ?? [],
+  }));
+
+  const publishedProducts = normalizedProducts.filter((product) => product.show_on_storefront);
   const featuredProducts = publishedProducts.filter((product) => product.is_storefront_featured);
   const favoriteProducts = publishedProducts.filter((product) => product.is_storefront_favorite);
-  const hiddenProducts = products.filter((product) => !product.show_on_storefront);
+  const hiddenProducts = normalizedProducts.filter((product) => !product.show_on_storefront);
   const unavailablePublishedProducts = publishedProducts.filter(
     (product) =>
       !product.is_active ||
@@ -56,9 +68,9 @@ export async function getSiteAdminPageData() {
 
   return {
     settings,
-    products,
+    products: normalizedProducts,
     summary: {
-      totalProducts: products.length,
+      totalProducts: normalizedProducts.length,
       publishedProducts: publishedProducts.length,
       featuredProducts: featuredProducts.length,
       favoriteProducts: favoriteProducts.length,

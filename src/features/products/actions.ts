@@ -12,9 +12,18 @@ const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "im
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function normalizeProductPayload(values: ReturnType<typeof productSchema.parse>) {
+  const normalizedCategoryIds = Array.from(
+    new Set(
+      [values.category_id, ...values.category_ids].filter(
+        (value): value is string => typeof value === "string" && value.length > 0,
+      ),
+    ),
+  );
+
   return {
     ...values,
-    category_id: values.category_id || null,
+    category_id: normalizedCategoryIds[0] ?? null,
+    category_ids: normalizedCategoryIds,
     pan_shape_code: values.pan_shape_code?.trim() || null,
     serving_reference_quantity:
       values.serving_reference_quantity && values.serving_reference_quantity > 0
@@ -26,6 +35,30 @@ function normalizeProductPayload(values: ReturnType<typeof productSchema.parse>)
     notes: values.notes?.trim() || null,
     photo_path: values.photo_path?.trim() || null,
   };
+}
+
+async function syncProductCategories(productId: string, categoryIds: string[]) {
+  const supabase = await createClient();
+
+  const { error: deleteError } = await supabase.from("product_category_links").delete().eq("product_id", productId);
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  if (!categoryIds.length) {
+    return;
+  }
+
+  const { error: insertError } = await supabase.from("product_category_links").insert(
+    categoryIds.map((categoryId) => ({
+      product_id: productId,
+      category_id: categoryId,
+    })),
+  );
+
+  if (insertError) {
+    throw new Error(insertError.message);
+  }
 }
 
 function getImageExtension(file: File) {
@@ -77,6 +110,7 @@ export async function createProductAction(formData: FormData) {
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     category_id: formData.get("category_id"),
+    category_ids: formData.getAll("category_ids"),
     description: formData.get("description"),
     sale_price: formData.get("sale_price"),
     estimated_cost: formData.get("estimated_cost"),
@@ -118,10 +152,17 @@ export async function createProductAction(formData: FormData) {
     ...parsed.data,
     photo_path: uploadedPhotoUrl ?? parsed.data.photo_path,
   });
-  const { error } = await supabase.from("products").insert(payload);
+  const { category_ids, ...productPayload } = payload;
+  const { data: product, error } = await supabase.from("products").insert(productPayload).select("id").single();
 
-  if (error) {
+  if (error || !product) {
     return { success: false, error: error.message };
+  }
+
+  try {
+    await syncProductCategories(product.id, category_ids);
+  } catch (syncError) {
+    return { success: false, error: syncError instanceof Error ? syncError.message : "Não foi possível salvar as categorias." };
   }
 
   revalidatePath("/produtos");
@@ -136,6 +177,7 @@ export async function updateProductAction(id: string, formData: FormData) {
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     category_id: formData.get("category_id"),
+    category_ids: formData.getAll("category_ids"),
     description: formData.get("description"),
     sale_price: formData.get("sale_price"),
     estimated_cost: formData.get("estimated_cost"),
@@ -177,10 +219,17 @@ export async function updateProductAction(id: string, formData: FormData) {
     ...parsed.data,
     photo_path: uploadedPhotoUrl ?? parsed.data.photo_path,
   });
-  const { error } = await supabase.from("products").update(payload).eq("id", id);
+  const { category_ids, ...productPayload } = payload;
+  const { error } = await supabase.from("products").update(productPayload).eq("id", id);
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  try {
+    await syncProductCategories(id, category_ids);
+  } catch (syncError) {
+    return { success: false, error: syncError instanceof Error ? syncError.message : "Não foi possível salvar as categorias." };
   }
 
   const { data: recipe } = await supabase
@@ -238,6 +287,66 @@ export async function updateProductCategoryAction(id: string, formData: FormData
   }
 
   revalidatePath("/produtos");
+  revalidatePath("/");
+  revalidatePath("/cardapio");
+  return { success: true };
+}
+
+export async function deleteProductCategoryAction(id: string) {
+  const supabase = await createClient();
+
+  const { data: linkedProducts, error: linkedProductsError } = await supabase
+    .from("product_category_links")
+    .select("product_id")
+    .eq("category_id", id);
+
+  if (linkedProductsError) {
+    return { success: false, error: linkedProductsError.message };
+  }
+
+  const affectedProductIds = Array.from(new Set((linkedProducts ?? []).map((item) => item.product_id)));
+
+  const { error: deleteLinksError } = await supabase.from("product_category_links").delete().eq("category_id", id);
+  if (deleteLinksError) {
+    return { success: false, error: deleteLinksError.message };
+  }
+
+  const { error: clearPrimaryError } = await supabase.from("products").update({ category_id: null }).eq("category_id", id);
+  if (clearPrimaryError) {
+    return { success: false, error: clearPrimaryError.message };
+  }
+
+  for (const productId of affectedProductIds) {
+    const { data: remainingLink, error: remainingLinkError } = await supabase
+      .from("product_category_links")
+      .select("category_id")
+      .eq("product_id", productId)
+      .limit(1)
+      .maybeSingle();
+
+    if (remainingLinkError) {
+      return { success: false, error: remainingLinkError.message };
+    }
+
+    if (remainingLink?.category_id) {
+      const { error: restorePrimaryError } = await supabase
+        .from("products")
+        .update({ category_id: remainingLink.category_id })
+        .eq("id", productId);
+
+      if (restorePrimaryError) {
+        return { success: false, error: restorePrimaryError.message };
+      }
+    }
+  }
+
+  const { error: deleteCategoryError } = await supabase.from("product_categories").delete().eq("id", id);
+  if (deleteCategoryError) {
+    return { success: false, error: deleteCategoryError.message };
+  }
+
+  revalidatePath("/produtos");
+  revalidatePath("/site");
   revalidatePath("/");
   revalidatePath("/cardapio");
   return { success: true };

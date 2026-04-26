@@ -21,7 +21,7 @@ export const buildWhatsAppMessage = (order: WhatsAppOrder) => {
   const lines: string[] = [];
 
   lines.push("🍰🧁 Pedido Ju.pani");
-  lines.push(`Pedido: #${order.orderCode}`);
+  lines.push(`Numero do pedido: ${order.orderCode}`);
   lines.push("");
   lines.push("Itens:");
   order.items.forEach((item) => {

@@ -6,8 +6,10 @@ export type ProductCardData = {
   price: number;
   images: string[];
   category: string;
+  categories: string[];
   active: boolean;
   categoryId?: string | null;
+  categoryIds?: string[];
   fulfillmentType: "sob_encomenda" | "pronta_entrega";
   unit: string;
   stockQuantity: number;

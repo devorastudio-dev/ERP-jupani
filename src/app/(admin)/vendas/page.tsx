@@ -2,11 +2,12 @@ import Link from "next/link";
 import { SaleForm } from "@/features/sales/components/sale-form";
 import { SalesList } from "@/features/sales/components/sales-list";
 import { getSalesPageData, type SalesSourceFilter } from "@/features/sales/server/queries";
+import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ADMIN_BASE_PATH } from "@/lib/route-config";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { getCurrentProfile } from "@/server/auth/session";
 import { requireModule } from "@/server/auth/guards";
 
@@ -42,6 +43,26 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
         description="Monte pedidos completos com itens, pagamentos, histórico de status e integração direta com o caixa."
         action={
           <div className="flex flex-wrap gap-2">
+            <ExportCsvButton
+              filename={`pedidos-${sourceFilter}.csv`}
+              rows={sales.map((sale) => ({
+                numero_pedido: sale.order_code ?? "",
+                cliente: sale.customer_name ?? "",
+                telefone: sale.phone ?? "",
+                origem: sale.external_reference === "site_publico" ? "site" : "painel",
+                tipo_venda: sale.sale_type ?? "",
+                atendimento: sale.order_type ?? "",
+                status: sale.status,
+                entrega: formatDate(sale.delivery_date, "DD/MM/YYYY HH:mm"),
+                total: formatCurrency(Number(sale.total_amount ?? 0)),
+                recebido: formatCurrency(Number(sale.paid_amount ?? 0)),
+                pendente: formatCurrency(Number(sale.pending_amount ?? 0)),
+                forma_pagamento: sale.payment_method ?? "",
+                categorias_itens: sale.sale_items?.map((item) => item.product_name).join(" | ") ?? "",
+                observacoes_cliente: sale.notes ?? "",
+                observacoes_internas: sale.internal_notes ?? "",
+              }))}
+            />
             {filterLinks.map((filter) => {
               const href =
                 filter.value === "all"

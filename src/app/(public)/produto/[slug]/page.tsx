@@ -60,7 +60,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
-            <Badge>{getCategoryLabel(product.category)}</Badge>
+            {(product.categories.length ? product.categories : [product.category]).map((category) => (
+              <Badge key={category}>{getCategoryLabel(category)}</Badge>
+            ))}
             {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
             {product.isHealthy ? <Badge variant="healthy">Fitness</Badge> : null}
           </div>

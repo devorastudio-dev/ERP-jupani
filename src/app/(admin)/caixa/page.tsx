@@ -1,5 +1,6 @@
 import { AccountsOverview } from "@/features/cash/components/accounts-overview";
 import { CashOperations } from "@/features/cash/components/cash-operations";
+import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,62 @@ export default async function CashPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Caixa e financeiro" description="Acompanhe aberturas, fechamentos, sangrias, reforços e movimentações do dia a dia." />
+      <PageHeader
+        title="Caixa e financeiro"
+        description="Acompanhe aberturas, fechamentos, sangrias, reforços e movimentações do dia a dia."
+        action={
+          <div className="flex flex-wrap gap-2">
+            <ExportCsvButton
+              filename="caixa-movimentacoes.csv"
+              rows={movements.map((movement) => ({
+                descricao: movement.description,
+                tipo: movement.movement_type,
+                categoria: movement.category_name ?? "",
+                referencia: movement.reference_type ?? "",
+                valor: formatCurrency(Number(movement.amount ?? 0)),
+                data: formatDate(movement.created_at, "DD/MM/YYYY HH:mm"),
+              }))}
+            />
+            <ExportCsvButton
+              filename="caixa-sessoes.csv"
+              rows={sessions.map((session) => ({
+                abertura: formatDate(session.opened_at, "DD/MM/YYYY HH:mm"),
+                fechamento: formatDate(session.closed_at, "DD/MM/YYYY HH:mm"),
+                status: session.status,
+                saldo_abertura: formatCurrency(Number(session.opening_balance ?? 0)),
+                saldo_fechamento: formatCurrency(Number(session.closing_balance ?? 0)),
+              }))}
+              label="Exportar sessões"
+            />
+            <ExportCsvButton
+              filename="contas-a-pagar.csv"
+              rows={payables.map((payable) => ({
+                descricao: payable.description,
+                valor_total: formatCurrency(Number(payable.amount ?? 0)),
+                valor_pago: formatCurrency(Number(payable.paid_amount ?? 0)),
+                vencimento: formatDate(payable.due_date),
+                status: payable.status,
+                origem: payable.origin ?? "",
+                observacoes: payable.notes ?? "",
+              }))}
+              label="Exportar contas a pagar"
+            />
+            <ExportCsvButton
+              filename="contas-a-receber.csv"
+              rows={receivables.map((receivable) => ({
+                descricao: receivable.description,
+                valor_total: formatCurrency(Number(receivable.amount ?? 0)),
+                valor_recebido: formatCurrency(Number(receivable.received_amount ?? 0)),
+                vencimento: formatDate(receivable.due_date),
+                status: receivable.status,
+                origem: receivable.origin ?? "",
+                observacoes: receivable.notes ?? "",
+              }))}
+              label="Exportar contas a receber"
+            />
+          </div>
+        }
+      />
       <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         <Card className="min-w-0">
           <CardHeader className="pb-2">

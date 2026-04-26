@@ -109,8 +109,11 @@ export function ProductsTable({
         },
         {
           accessorKey: "categories",
-          header: "Categoria",
-          cell: ({ row }) => row.original.categories?.name ?? "-",
+          header: "Categorias",
+          cell: ({ row }) =>
+            row.original.categories?.length
+              ? row.original.categories.map((category) => category.name).join(", ")
+              : "-",
         },
         {
           accessorKey: "is_active",

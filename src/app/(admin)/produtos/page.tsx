@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getProductsPageData } from "@/features/products/server/queries";
 import { ProductCategoriesCard } from "@/features/products/components/product-categories-card";
 import { ProductForm } from "@/features/products/components/product-form";
@@ -6,27 +7,38 @@ import { ProductsTable } from "@/features/products/components/products-table";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { getCurrentProfile } from "@/server/auth/session";
 import { requireModule } from "@/server/auth/guards";
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ category?: string }>;
+}) {
   const profile = await getCurrentProfile();
   if (!profile) return null;
   requireModule(profile, "produtos");
 
+  const resolvedSearchParams = await searchParams;
   const { products, categories, productStockMovements } = await getProductsPageData();
-  const activeProducts = products.filter((product) => product.is_active).length;
-  const readyDeliveryProducts = products.filter((product) => product.fulfillment_type === "pronta_entrega");
+  const selectedCategory = resolvedSearchParams?.category ?? "all";
+  const filteredProducts =
+    selectedCategory === "all"
+      ? products
+      : products.filter((product) => product.category_ids?.includes(selectedCategory));
+  const activeProducts = filteredProducts.filter((product) => product.is_active).length;
+  const readyDeliveryProducts = filteredProducts.filter((product) => product.fulfillment_type === "pronta_entrega");
   const lowFinishedGoods = readyDeliveryProducts.filter(
     (product) => Number(product.finished_stock_quantity ?? 0) <= Number(product.minimum_finished_stock ?? 0),
   ).length;
   const averageMargin =
-    products.length > 0
-      ? products.reduce((sum, product) => {
+    filteredProducts.length > 0
+      ? filteredProducts.reduce((sum, product) => {
           const salePrice = Number(product.sale_price ?? 0);
           const estimatedCost = Number(product.estimated_cost ?? 0);
           return sum + (salePrice > 0 ? ((salePrice - estimatedCost) / salePrice) * 100 : 0);
-        }, 0) / products.length
+        }, 0) / filteredProducts.length
       : 0;
 
   return (
@@ -37,9 +49,9 @@ export default async function ProductsPage() {
         action={
           <ExportCsvButton
             filename="catalogo-produtos.csv"
-            rows={products.map((product) => ({
+            rows={filteredProducts.map((product) => ({
               nome: product.name,
-              categoria: product.categories?.name ?? "",
+              categorias: product.categories?.map((category) => category.name).join(", ") ?? "",
               tipo: product.fulfillment_type,
               preco_venda: product.sale_price,
               custo_estimado: product.estimated_cost,
@@ -87,9 +99,35 @@ export default async function ProductsPage() {
             <p className="text-sm text-stone-500">
               Itens pronta-entrega exibem saldo acabado e ajudam a separar produção para estoque de produção sob demanda.
             </p>
+            <form method="GET" className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="space-y-2">
+                <label htmlFor="category-filter" className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">
+                  Filtrar por categoria
+                </label>
+                <select
+                  id="category-filter"
+                  name="category"
+                  defaultValue={selectedCategory}
+                  className="flex h-10 min-w-[240px] rounded-xl border border-rose-100 bg-white px-3 text-sm"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" variant="outline">Aplicar</Button>
+                <Button asChild type="button" variant="ghost">
+                  <Link href="/produtos">Limpar</Link>
+                </Button>
+              </div>
+            </form>
           </CardHeader>
           <CardContent>
-            <ProductsTable products={products} categories={categories} />
+            <ProductsTable products={filteredProducts} categories={categories} />
           </CardContent>
         </Card>
       </section>
