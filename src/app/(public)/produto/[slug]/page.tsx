@@ -65,6 +65,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ))}
             {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
             {product.isHealthy ? <Badge variant="healthy">Fitness</Badge> : null}
+            {product.isLactoseFree ? <Badge variant="lactoseFree">Sem lactose</Badge> : null}
+            {product.isGlutenFree ? <Badge variant="glutenFree">Sem glúten</Badge> : null}
           </div>
           <div className="space-y-2">
             <h1 className="font-display text-3xl text-[#3a231c] md:text-4xl">

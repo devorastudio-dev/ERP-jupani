@@ -81,6 +81,8 @@ export default async function ProductsPage({
               destaque_site: product.is_storefront_featured ? "sim" : "nao",
               favorito_site: product.is_storefront_favorite ? "sim" : "nao",
               fitness_site: product.is_storefront_healthy ? "sim" : "nao",
+              sem_lactose_site: product.is_storefront_lactose_free ? "sim" : "nao",
+              sem_gluten_site: product.is_storefront_gluten_free ? "sim" : "nao",
               imagem: product.photo_path ?? "",
               observacoes: product.notes ?? "",
             }))}

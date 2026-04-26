@@ -74,6 +74,33 @@ export function RecipeList({
                   </div>
                 )}
               </div>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-medium text-stone-700">Embalagens vinculadas</p>
+                {recipe.recipe_packaging_items?.length ? (
+                  recipe.recipe_packaging_items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between rounded-2xl bg-emerald-50/70 px-4 py-3"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-stone-800">
+                          {item.ingredients?.name ?? "Embalagem"}
+                        </p>
+                        <p className="text-xs text-stone-500">
+                          {item.quantity} {item.unit}
+                        </p>
+                      </div>
+                      <p className="text-sm font-semibold text-stone-800">
+                        {formatCurrency(Number(item.calculated_cost ?? 0))}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-emerald-200 p-4 text-sm text-stone-500">
+                    Nenhum insumo de embalagem vinculado.
+                  </div>
+                )}
+              </div>
             </div>
           ))
         ) : (

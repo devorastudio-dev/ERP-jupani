@@ -13,6 +13,9 @@ type SiteProductRow = {
   show_on_storefront: boolean;
   is_storefront_featured: boolean;
   is_storefront_favorite: boolean;
+  is_storefront_healthy: boolean;
+  is_storefront_lactose_free: boolean;
+  is_storefront_gluten_free: boolean;
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   finished_stock_quantity: number | null;
   categories: Array<{ id: string; name: string }>;
@@ -38,6 +41,9 @@ export async function getSiteAdminPageData() {
           show_on_storefront,
           is_storefront_featured,
           is_storefront_favorite,
+          is_storefront_healthy,
+          is_storefront_lactose_free,
+          is_storefront_gluten_free,
           fulfillment_type,
           finished_stock_quantity,
           product_category_links(product_categories(id, name))

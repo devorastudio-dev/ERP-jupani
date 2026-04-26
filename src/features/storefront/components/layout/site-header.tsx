@@ -12,6 +12,7 @@ import logoImg from "../../../../../public/images/logo.png";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/cardapio", label: "Pedidos" },
+  { href: "/saudavel", label: "Saudáveis" },
   { href: "/sobre", label: "Sobre" },
   { href: "/endereco", label: "Endereço" },
 ];

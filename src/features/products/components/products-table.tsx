@@ -135,6 +135,8 @@ export function ProductsTable({
               {row.original.is_storefront_featured ? <Badge variant="warning">Destaque</Badge> : null}
               {row.original.is_storefront_favorite ? <Badge variant="default">Favorito</Badge> : null}
               {row.original.is_storefront_healthy ? <Badge variant="success">Fitness</Badge> : null}
+              {row.original.is_storefront_lactose_free ? <Badge variant="success">Sem lactose</Badge> : null}
+              {row.original.is_storefront_gluten_free ? <Badge variant="success">Sem glúten</Badge> : null}
             </div>
           ),
         },

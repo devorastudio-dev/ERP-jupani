@@ -143,6 +143,9 @@ export default async function SiteAdminPage() {
                       </Badge>
                       {product.is_storefront_featured ? <Badge>Destaque</Badge> : null}
                       {product.is_storefront_favorite ? <Badge variant="muted">Favorito</Badge> : null}
+                      {product.is_storefront_healthy ? <Badge variant="success">Fitness</Badge> : null}
+                      {product.is_storefront_lactose_free ? <Badge variant="success">Sem lactose</Badge> : null}
+                      {product.is_storefront_gluten_free ? <Badge variant="success">Sem glúten</Badge> : null}
                       {isUnavailable ? <Badge variant="warning">Indisponível agora</Badge> : null}
                     </div>
                     <p className="text-sm text-stone-500">

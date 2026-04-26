@@ -7,10 +7,13 @@ import { recipeSchema } from "@/features/recipes/schema";
 
 export async function createRecipeAction(formData: FormData) {
   const rawItems = formData.get("items");
+  const rawPackagingItems = formData.get("packaging_items");
   let parsedItems: unknown[] = [];
+  let parsedPackagingItems: unknown[] = [];
 
   try {
     parsedItems = rawItems ? JSON.parse(String(rawItems)) : [];
+    parsedPackagingItems = rawPackagingItems ? JSON.parse(String(rawPackagingItems)) : [];
   } catch {
     return { success: false, error: "Não foi possível ler os itens da ficha técnica." };
   }
@@ -21,6 +24,7 @@ export async function createRecipeAction(formData: FormData) {
     additional_cost: formData.get("additional_cost"),
     notes: formData.get("notes"),
     items: parsedItems,
+    packaging_items: parsedPackagingItems,
   });
 
   if (!parsed.success) {
@@ -74,22 +78,40 @@ export async function createRecipeAction(formData: FormData) {
     return { success: false, error: itemsError.message };
   }
 
+  if (parsed.data.packaging_items.length) {
+    const packagingItemsToInsert = parsed.data.packaging_items.map((item) => ({
+      recipe_id: recipe.id,
+      ingredient_id: item.ingredient_id,
+      unit: item.unit,
+      quantity: item.quantity,
+    }));
+
+    const { error: packagingItemsError } = await supabase.from("recipe_packaging_items").insert(packagingItemsToInsert);
+    if (packagingItemsError) {
+      return { success: false, error: packagingItemsError.message };
+    }
+  }
+
   await recalculateRecipeAndProductMetrics(recipe.id);
 
   revalidatePath("/fichas-tecnicas");
   revalidatePath("/produtos");
   revalidatePath("/dashboard");
   revalidatePath("/cardapio");
+  revalidatePath("/saudavel");
 
   return { success: true };
 }
 
 export async function updateRecipeAction(id: string, formData: FormData) {
   const rawItems = formData.get("items");
+  const rawPackagingItems = formData.get("packaging_items");
   let parsedItems: unknown[] = [];
+  let parsedPackagingItems: unknown[] = [];
 
   try {
     parsedItems = rawItems ? JSON.parse(String(rawItems)) : [];
+    parsedPackagingItems = rawPackagingItems ? JSON.parse(String(rawPackagingItems)) : [];
   } catch {
     return { success: false, error: "Não foi possível ler os itens da ficha técnica." };
   }
@@ -100,6 +122,7 @@ export async function updateRecipeAction(id: string, formData: FormData) {
     additional_cost: formData.get("additional_cost"),
     notes: formData.get("notes"),
     items: parsedItems,
+    packaging_items: parsedPackagingItems,
   });
 
   if (!parsed.success) {
@@ -137,6 +160,11 @@ export async function updateRecipeAction(id: string, formData: FormData) {
     return { success: false, error: deleteError.message };
   }
 
+  const { error: deletePackagingError } = await supabase.from("recipe_packaging_items").delete().eq("recipe_id", id);
+  if (deletePackagingError) {
+    return { success: false, error: deletePackagingError.message };
+  }
+
   const itemsToInsert = parsed.data.items.map((item) => ({
     recipe_id: id,
     ingredient_id: item.ingredient_id,
@@ -149,12 +177,27 @@ export async function updateRecipeAction(id: string, formData: FormData) {
     return { success: false, error: itemsError.message };
   }
 
+  if (parsed.data.packaging_items.length) {
+    const packagingItemsToInsert = parsed.data.packaging_items.map((item) => ({
+      recipe_id: id,
+      ingredient_id: item.ingredient_id,
+      unit: item.unit,
+      quantity: item.quantity,
+    }));
+
+    const { error: packagingItemsError } = await supabase.from("recipe_packaging_items").insert(packagingItemsToInsert);
+    if (packagingItemsError) {
+      return { success: false, error: packagingItemsError.message };
+    }
+  }
+
   await recalculateRecipeAndProductMetrics(id);
 
   revalidatePath("/fichas-tecnicas");
   revalidatePath("/produtos");
   revalidatePath("/dashboard");
   revalidatePath("/cardapio");
+  revalidatePath("/saudavel");
 
   return { success: true };
 }

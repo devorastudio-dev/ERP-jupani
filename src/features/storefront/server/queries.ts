@@ -16,6 +16,8 @@ const PRODUCT_SELECT = `
   is_storefront_featured,
   is_storefront_favorite,
   is_storefront_healthy,
+  is_storefront_lactose_free,
+  is_storefront_gluten_free,
   fulfillment_type,
   unit,
   notes,
@@ -43,6 +45,8 @@ type StorefrontProductRow = {
   is_storefront_featured: boolean;
   is_storefront_favorite: boolean;
   is_storefront_healthy: boolean;
+  is_storefront_lactose_free: boolean;
+  is_storefront_gluten_free: boolean;
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   unit: string;
   notes: string | null;
@@ -129,6 +133,8 @@ const mapProduct = (row: StorefrontProductRow): ProductCardData => {
     estimatedKcalPerServing: Number(row.estimated_kcal_per_serving ?? 0),
     displayIngredients,
     isHealthy: row.is_storefront_healthy,
+    isLactoseFree: row.is_storefront_lactose_free,
+    isGlutenFree: row.is_storefront_gluten_free,
     notes: row.notes,
     availableForOrder,
   };
@@ -179,6 +185,8 @@ export async function getStorefrontProducts({
   featured,
   favorite,
   healthy,
+  lactoseFree,
+  glutenFree,
   page = 1,
   pageSize = 9,
   includeInactive = false,
@@ -188,6 +196,8 @@ export async function getStorefrontProducts({
   featured?: boolean;
   favorite?: boolean;
   healthy?: boolean;
+  lactoseFree?: boolean;
+  glutenFree?: boolean;
   page?: number;
   pageSize?: number;
   includeInactive?: boolean;
@@ -233,6 +243,14 @@ export async function getStorefrontProducts({
 
   if (healthy) {
     builder = builder.eq("is_storefront_healthy", true);
+  }
+
+  if (lactoseFree) {
+    builder = builder.eq("is_storefront_lactose_free", true);
+  }
+
+  if (glutenFree) {
+    builder = builder.eq("is_storefront_gluten_free", true);
   }
 
   if (query?.trim()) {

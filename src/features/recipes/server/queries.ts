@@ -32,6 +32,20 @@ export async function getRecipesPageData() {
               nutrition_unit,
               kcal_amount
             )
+          ),
+          recipe_packaging_items (
+            id,
+            ingredient_id,
+            unit,
+            quantity,
+            calculated_cost,
+            ingredients (
+              name,
+              unit,
+              nutrition_quantity,
+              nutrition_unit,
+              kcal_amount
+            )
           )
         `)
         .order("updated_at", { ascending: false }),

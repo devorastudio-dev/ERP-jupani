@@ -33,7 +33,7 @@ export async function getProductsPageData() {
       supabase
         .from("products")
         .select(
-          "id, name, category_id, description, sale_price, estimated_cost, finished_stock_quantity, minimum_finished_stock, is_active, fulfillment_type, unit, yield_quantity, pan_shape_code, serving_reference_quantity, serving_reference_unit, estimated_servings, estimated_kcal_total, estimated_kcal_per_serving, public_ingredients_text, notes, photo_path, show_on_storefront, is_storefront_featured, is_storefront_favorite, is_storefront_healthy, product_category_links(category_id, product_categories(id, name)), recipes(id, theoretical_cost, recipe_items(id, ingredients(name)))",
+          "id, name, category_id, description, sale_price, estimated_cost, finished_stock_quantity, minimum_finished_stock, is_active, fulfillment_type, unit, yield_quantity, pan_shape_code, serving_reference_quantity, serving_reference_unit, estimated_servings, estimated_kcal_total, estimated_kcal_per_serving, public_ingredients_text, notes, photo_path, show_on_storefront, is_storefront_featured, is_storefront_favorite, is_storefront_healthy, is_storefront_lactose_free, is_storefront_gluten_free, product_category_links(category_id, product_categories(id, name)), recipes(id, theoretical_cost, recipe_items(id, ingredients(name)))",
         )
         .order("name"),
       [],

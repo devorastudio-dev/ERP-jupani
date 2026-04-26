@@ -12,6 +12,7 @@ export const recipeSchema = z.object({
   additional_cost: z.coerce.number().min(0).default(0),
   notes: z.string().optional(),
   items: z.array(recipeItemSchema).min(1, "Adicione ao menos um insumo."),
+  packaging_items: z.array(recipeItemSchema).default([]),
 });
 
 export const categorySchema = z.object({

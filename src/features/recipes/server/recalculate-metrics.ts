@@ -18,6 +18,12 @@ type RecipeMetricsRow = {
       kcal_amount?: number | null;
     } | null;
   }> | null;
+  recipe_packaging_items: Array<{
+    ingredient_id: string;
+    ingredients: {
+      name?: string | null;
+    } | null;
+  }> | null;
 };
 
 type ProductMetricsRow = {
@@ -47,6 +53,12 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
           nutrition_quantity,
           nutrition_unit,
           kcal_amount
+        )
+      ),
+      recipe_packaging_items (
+        ingredient_id,
+        ingredients (
+          name
         )
       )
     `)
@@ -99,9 +111,10 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
       product.public_ingredients_text?.trim() ||
       [
         ...new Set(
-          (recipe.recipe_items ?? [])
-            .map((item) => item.ingredients?.name?.trim() || "")
-            .filter(Boolean),
+          [
+            ...(recipe.recipe_items ?? []).map((item) => item.ingredients?.name?.trim() || ""),
+            ...(recipe.recipe_packaging_items ?? []).map((item) => item.ingredients?.name?.trim() || ""),
+          ].filter(Boolean),
         ),
       ].join(", ") ||
       null,
@@ -122,15 +135,22 @@ export async function recalculateRecipeAndProductMetrics(recipeId: string) {
 
 export async function recalculateMetricsByIngredient(ingredientId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("recipe_items")
-    .select("recipe_id")
-    .eq("ingredient_id", ingredientId);
+  const [{ data: recipeItems, error: recipeItemsError }, { data: packagingItems, error: packagingItemsError }] =
+    await Promise.all([
+      supabase.from("recipe_items").select("recipe_id").eq("ingredient_id", ingredientId),
+      supabase.from("recipe_packaging_items").select("recipe_id").eq("ingredient_id", ingredientId),
+    ]);
 
-  if (error) {
-    throw new Error(error.message);
+  if (recipeItemsError) {
+    throw new Error(recipeItemsError.message);
   }
 
-  const recipeIds = [...new Set((data ?? []).map((item) => item.recipe_id).filter(Boolean))];
+  if (packagingItemsError) {
+    throw new Error(packagingItemsError.message);
+  }
+
+  const recipeIds = [
+    ...new Set([...(recipeItems ?? []), ...(packagingItems ?? [])].map((item) => item.recipe_id).filter(Boolean)),
+  ];
   await Promise.all(recipeIds.map((recipeId) => recalculateRecipeAndProductMetrics(recipeId)));
 }

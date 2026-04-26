@@ -130,6 +130,8 @@ export async function createProductAction(formData: FormData) {
     is_storefront_featured: formData.get("is_storefront_featured") === "true",
     is_storefront_favorite: formData.get("is_storefront_favorite") === "true",
     is_storefront_healthy: formData.get("is_storefront_healthy") === "true",
+    is_storefront_lactose_free: formData.get("is_storefront_lactose_free") === "true",
+    is_storefront_gluten_free: formData.get("is_storefront_gluten_free") === "true",
   });
 
   if (!parsed.success) {
@@ -170,6 +172,7 @@ export async function createProductAction(formData: FormData) {
   revalidatePath("/site");
   revalidatePath("/");
   revalidatePath("/cardapio");
+  revalidatePath("/saudavel");
   return { success: true };
 }
 
@@ -197,6 +200,8 @@ export async function updateProductAction(id: string, formData: FormData) {
     is_storefront_featured: formData.get("is_storefront_featured") === "true",
     is_storefront_favorite: formData.get("is_storefront_favorite") === "true",
     is_storefront_healthy: formData.get("is_storefront_healthy") === "true",
+    is_storefront_lactose_free: formData.get("is_storefront_lactose_free") === "true",
+    is_storefront_gluten_free: formData.get("is_storefront_gluten_free") === "true",
   });
 
   if (!parsed.success) {
@@ -247,6 +252,7 @@ export async function updateProductAction(id: string, formData: FormData) {
   revalidatePath("/site");
   revalidatePath("/");
   revalidatePath("/cardapio");
+  revalidatePath("/saudavel");
   return { success: true };
 }
 
@@ -289,6 +295,7 @@ export async function updateProductCategoryAction(id: string, formData: FormData
   revalidatePath("/produtos");
   revalidatePath("/");
   revalidatePath("/cardapio");
+  revalidatePath("/saudavel");
   return { success: true };
 }
 
@@ -349,6 +356,7 @@ export async function deleteProductCategoryAction(id: string) {
   revalidatePath("/site");
   revalidatePath("/");
   revalidatePath("/cardapio");
+  revalidatePath("/saudavel");
   return { success: true };
 }
 

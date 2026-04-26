@@ -31,6 +31,8 @@ export interface ProductRow {
   is_storefront_featured?: boolean;
   is_storefront_favorite?: boolean;
   is_storefront_healthy?: boolean;
+  is_storefront_lactose_free?: boolean;
+  is_storefront_gluten_free?: boolean;
   categories?: NamedCategory[] | null;
   recipes?: Array<{
     id: string;
@@ -98,6 +100,7 @@ export interface RecipeRow {
   additional_cost: number | null;
   notes?: string | null;
   recipe_items?: RecipeItemRow[];
+  recipe_packaging_items?: RecipeItemRow[];
 }
 
 export interface SaleSummaryRow {

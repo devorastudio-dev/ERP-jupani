@@ -13,6 +13,8 @@ export type ProductFilters = {
   featured?: boolean;
   favorite?: boolean;
   healthy?: boolean;
+  lactoseFree?: boolean;
+  glutenFree?: boolean;
   page?: number;
   pageSize?: number;
   includeInactive?: boolean;
@@ -42,6 +44,22 @@ export const getHealthyProducts = async () => {
   return items;
 };
 
+export const getLactoseFreeProducts = async () => {
+  const { items } = await getStorefrontProducts({
+    lactoseFree: true,
+    pageSize: 8,
+  });
+  return items;
+};
+
+export const getGlutenFreeProducts = async () => {
+  const { items } = await getStorefrontProducts({
+    glutenFree: true,
+    pageSize: 8,
+  });
+  return items;
+};
+
 export const getProductBySlug = async (slug: string) => getStorefrontProductBySlug(slug);
 
 export const getProducts = async ({
@@ -50,6 +68,8 @@ export const getProducts = async ({
   featured,
   favorite,
   healthy,
+  lactoseFree,
+  glutenFree,
   page = 1,
   pageSize = PRODUCT_PAGE_SIZE,
   includeInactive = false,
@@ -60,6 +80,8 @@ export const getProducts = async ({
     featured,
     favorite,
     healthy,
+    lactoseFree,
+    glutenFree,
     page,
     pageSize,
     includeInactive,

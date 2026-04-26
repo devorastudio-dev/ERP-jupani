@@ -23,6 +23,8 @@ export const productSchema = z.object({
   is_storefront_featured: z.coerce.boolean().default(false),
   is_storefront_favorite: z.coerce.boolean().default(false),
   is_storefront_healthy: z.coerce.boolean().default(false),
+  is_storefront_lactose_free: z.coerce.boolean().default(false),
+  is_storefront_gluten_free: z.coerce.boolean().default(false),
 });
 
 export type ProductSchema = z.infer<typeof productSchema>;

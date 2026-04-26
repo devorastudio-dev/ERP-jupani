@@ -2,7 +2,7 @@ import clsx from "clsx";
 import type { HTMLAttributes } from "react";
 
 type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
-  variant?: "featured" | "favorite" | "healthy" | "default";
+  variant?: "featured" | "favorite" | "healthy" | "lactoseFree" | "glutenFree" | "default";
 };
 
 export const Badge = ({ variant = "default", className, ...props }: BadgeProps) => (
@@ -12,6 +12,8 @@ export const Badge = ({ variant = "default", className, ...props }: BadgeProps) 
       variant === "featured" && "bg-[#f3b59d] text-[#4b2c24]",
       variant === "favorite" && "bg-[#fde2d7] text-[#7b3b30]",
       variant === "healthy" && "bg-[#dff3df] text-[#245c33]",
+      variant === "lactoseFree" && "bg-[#eef7dd] text-[#476128]",
+      variant === "glutenFree" && "bg-[#e3f3ec] text-[#1d5b4a]",
       variant === "default" && "bg-[#f7ede6] text-[#7b3b30]",
       className
     )}

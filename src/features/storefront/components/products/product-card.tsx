@@ -33,6 +33,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           ))}
           {product.availableForOrder && <Badge variant="featured">Disponível</Badge>}
           {product.isHealthy ? <Badge variant="healthy">Fitness</Badge> : null}
+          {product.isLactoseFree ? <Badge variant="lactoseFree">Sem lactose</Badge> : null}
+          {product.isGlutenFree ? <Badge variant="glutenFree">Sem glúten</Badge> : null}
         </div>
         <div className="space-y-2">
           <Link href={`/produto/${product.slug}`}>

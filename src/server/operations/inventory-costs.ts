@@ -37,6 +37,25 @@ type ProductRecipeRecord = {
         }>
       | null;
   }>;
+  recipe_packaging_items: Array<{
+    quantity: number | null;
+    ingredients:
+      | {
+          id: string;
+          name: string;
+          unit: string | null;
+          stock_quantity: number | null;
+          average_cost: number | null;
+        }
+      | Array<{
+          id: string;
+          name: string;
+          unit: string | null;
+          stock_quantity: number | null;
+          average_cost: number | null;
+        }>
+      | null;
+  }>;
 };
 
 export type StockValidationResult = {
@@ -49,6 +68,7 @@ type StockValidationMode = "sale" | "production";
 function normalizeIngredient(
   ingredient:
     | ProductRecipeRecord["recipe_items"][number]["ingredients"]
+    | ProductRecipeRecord["recipe_packaging_items"][number]["ingredients"]
     | undefined,
 ) {
   if (!ingredient) return null;
@@ -85,6 +105,16 @@ export async function validateStockForProducts(
       product_id,
       product_name,
       recipe_items (
+        quantity,
+        ingredients (
+          id,
+          name,
+          unit,
+          stock_quantity,
+          average_cost
+        )
+      ),
+      recipe_packaging_items (
         quantity,
         ingredients (
           id,
@@ -169,6 +199,23 @@ export async function validateStockForProducts(
     }
 
     for (const item of recipe.recipe_items) {
+      const ingredient = normalizeIngredient(item.ingredients);
+      if (!ingredient?.id) continue;
+
+      const requiredQuantity = Number(item.quantity ?? 0) * demand.quantity;
+      const current = aggregatedRequirements.get(ingredient.id);
+
+      aggregatedRequirements.set(ingredient.id, {
+        ingredientId: ingredient.id,
+        ingredientName: ingredient.name,
+        unit: ingredient.unit ?? "",
+        requiredQuantity: Number(current?.requiredQuantity ?? 0) + requiredQuantity,
+        availableQuantity: Number(current?.availableQuantity ?? ingredient.stock_quantity ?? 0),
+        averageCost: Number(ingredient.average_cost ?? 0),
+      });
+    }
+
+    for (const item of recipe.recipe_packaging_items ?? []) {
       const ingredient = normalizeIngredient(item.ingredients);
       if (!ingredient?.id) continue;
 

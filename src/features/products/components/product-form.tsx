@@ -48,6 +48,8 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       is_storefront_featured: false,
       is_storefront_favorite: false,
       is_storefront_healthy: false,
+      is_storefront_lactose_free: false,
+      is_storefront_gluten_free: false,
       category_ids: [],
     },
   });
@@ -76,6 +78,8 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
       is_storefront_featured: product?.is_storefront_featured ?? false,
       is_storefront_favorite: product?.is_storefront_favorite ?? false,
       is_storefront_healthy: product?.is_storefront_healthy ?? false,
+      is_storefront_lactose_free: product?.is_storefront_lactose_free ?? false,
+      is_storefront_gluten_free: product?.is_storefront_gluten_free ?? false,
     });
   }, [product, reset]);
 
@@ -342,7 +346,7 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
         <input type="checkbox" value="true" {...register("is_active")} />
         Produto ativo
       </label>
-      <div className="grid gap-3 rounded-3xl border border-rose-100 bg-[#fff8f4] p-4 xl:col-span-2 md:grid-cols-4">
+      <div className="grid gap-3 rounded-3xl border border-rose-100 bg-[#fff8f4] p-4 xl:col-span-2 md:grid-cols-3">
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" value="true" {...register("show_on_storefront")} />
           Publicar no site
@@ -358,6 +362,14 @@ export function ProductForm({ categories, product, onSuccess }: ProductFormProps
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" value="true" {...register("is_storefront_healthy")} />
           Doce fitness
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("is_storefront_lactose_free")} />
+          Sem lactose
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("is_storefront_gluten_free")} />
+          Sem glúten
         </label>
       </div>
       <div className="xl:col-span-2">

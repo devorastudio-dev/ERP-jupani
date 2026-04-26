@@ -18,6 +18,8 @@ export type ProductCardData = {
   estimatedKcalPerServing?: number;
   displayIngredients?: string | null;
   isHealthy?: boolean;
+  isLactoseFree?: boolean;
+  isGlutenFree?: boolean;
   notes?: string | null;
   availableForOrder: boolean;
 };
