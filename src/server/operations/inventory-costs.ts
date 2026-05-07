@@ -1,4 +1,5 @@
 import { createClient } from "@/server/supabase/server";
+import { areUnitsCompatible, convertQuantity } from "@/lib/measurement";
 
 type ProductDemand = {
   productId: string;
@@ -19,6 +20,7 @@ type ProductRecipeRecord = {
   product_id: string;
   product_name: string;
   recipe_items: Array<{
+    unit: string | null;
     quantity: number | null;
     ingredients:
       | {
@@ -38,6 +40,7 @@ type ProductRecipeRecord = {
       | null;
   }>;
   recipe_packaging_items: Array<{
+    unit: string | null;
     quantity: number | null;
     ingredients:
       | {
@@ -75,6 +78,25 @@ function normalizeIngredient(
   return Array.isArray(ingredient) ? ingredient[0] ?? null : ingredient;
 }
 
+function normalizeRequiredQuantity(
+  quantity: number | null | undefined,
+  recipeUnit: string | null | undefined,
+  ingredientUnit: string | null | undefined,
+) {
+  const normalizedQuantity = Number(quantity ?? 0);
+  const convertedQuantity = convertQuantity(normalizedQuantity, recipeUnit ?? "", ingredientUnit ?? "");
+
+  if (convertedQuantity !== null) {
+    return convertedQuantity;
+  }
+
+  if (areUnitsCompatible(recipeUnit ?? "", ingredientUnit ?? "")) {
+    return normalizedQuantity;
+  }
+
+  return normalizedQuantity;
+}
+
 export async function validateStockForProducts(
   demands: ProductDemand[],
   mode: StockValidationMode = "production",
@@ -105,6 +127,7 @@ export async function validateStockForProducts(
       product_id,
       product_name,
       recipe_items (
+        unit,
         quantity,
         ingredients (
           id,
@@ -115,6 +138,7 @@ export async function validateStockForProducts(
         )
       ),
       recipe_packaging_items (
+        unit,
         quantity,
         ingredients (
           id,
@@ -202,7 +226,8 @@ export async function validateStockForProducts(
       const ingredient = normalizeIngredient(item.ingredients);
       if (!ingredient?.id) continue;
 
-      const requiredQuantity = Number(item.quantity ?? 0) * demand.quantity;
+      const requiredQuantity =
+        normalizeRequiredQuantity(item.quantity, item.unit, ingredient.unit) * demand.quantity;
       const current = aggregatedRequirements.get(ingredient.id);
 
       aggregatedRequirements.set(ingredient.id, {
@@ -219,7 +244,8 @@ export async function validateStockForProducts(
       const ingredient = normalizeIngredient(item.ingredients);
       if (!ingredient?.id) continue;
 
-      const requiredQuantity = Number(item.quantity ?? 0) * demand.quantity;
+      const requiredQuantity =
+        normalizeRequiredQuantity(item.quantity, item.unit, ingredient.unit) * demand.quantity;
       const current = aggregatedRequirements.get(ingredient.id);
 
       aggregatedRequirements.set(ingredient.id, {
