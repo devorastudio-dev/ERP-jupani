@@ -1,3 +1,31 @@
+export type ProductLine =
+  | "geral"
+  | "bolos_aniversario"
+  | "docinhos"
+  | "merendas";
+
+export type ProductOrderMode =
+  | "sob_encomenda"
+  | "pronta_entrega"
+  | "ambos";
+
+export interface SaleItemConfiguration {
+  flavor?: string | null;
+  size?: string | null;
+  theme?: string | null;
+  custom_message?: string | null;
+  event_date?: string | null;
+  serving_count?: number | null;
+  variant_notes?: string | null;
+  selected_addons?: string[] | null;
+  flavor_split?: Array<{
+    label: string;
+    quantity?: number | null;
+    notes?: string | null;
+  }> | null;
+  answers?: Record<string, string | number | boolean | null> | null;
+}
+
 export interface NamedCategory {
   id: string;
   name: string;
@@ -34,6 +62,22 @@ export interface ProductRow {
   public_ingredients_text?: string | null;
   notes?: string | null;
   photo_path?: string | null;
+  product_line?: ProductLine | null;
+  order_mode?: ProductOrderMode | null;
+  minimum_order_quantity?: number | null;
+  minimum_order_unit?: string | null;
+  lead_time_hours?: number | null;
+  accepts_flavor_selection?: boolean;
+  accepts_size_selection?: boolean;
+  accepts_theme_customization?: boolean;
+  accepts_custom_message?: boolean;
+  accepts_event_date?: boolean;
+  accepts_serving_count?: boolean;
+  accepts_variant_notes?: boolean;
+  requires_manual_quote?: boolean;
+  order_guidelines?: string | null;
+  storefront_section_title?: string | null;
+  storefront_badge_text?: string | null;
   show_on_storefront?: boolean;
   is_storefront_featured?: boolean;
   is_storefront_favorite?: boolean;
@@ -146,6 +190,7 @@ export interface SaleItemRow {
   discount_amount: number | null;
   total_price: number | null;
   notes?: string | null;
+  configuration_json?: SaleItemConfiguration | null;
 }
 
 export interface SalePaymentRow {

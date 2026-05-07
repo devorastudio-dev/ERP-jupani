@@ -18,6 +18,10 @@ type SiteProductRow = {
   is_storefront_gluten_free: boolean;
   fulfillment_type: "sob_encomenda" | "pronta_entrega";
   finished_stock_quantity: number | null;
+  product_line: string | null;
+  order_mode: string | null;
+  storefront_section_title: string | null;
+  storefront_badge_text: string | null;
   categories: Array<{ id: string; name: string }>;
 };
 
@@ -46,6 +50,10 @@ export async function getSiteAdminPageData() {
           is_storefront_gluten_free,
           fulfillment_type,
           finished_stock_quantity,
+          product_line,
+          order_mode,
+          storefront_section_title,
+          storefront_badge_text,
           product_category_links(product_categories(id, name))
         `)
         .order("name"),

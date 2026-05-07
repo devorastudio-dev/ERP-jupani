@@ -37,7 +37,8 @@ export async function getSalesPageData(sourceFilter: SalesSourceFilter = "all") 
         unit_price,
         discount_amount,
         total_price,
-        notes
+        notes,
+        configuration_json
       ),
       sale_payments (
         id,
@@ -73,7 +74,7 @@ export async function getSalesPageData(sourceFilter: SalesSourceFilter = "all") 
     safeQuery<ProductRow[]>(
       supabase
         .from("products")
-        .select("id, name, sale_price, estimated_cost, finished_stock_quantity, minimum_finished_stock, is_active, fulfillment_type, unit")
+        .select("id, name, sale_price, estimated_cost, finished_stock_quantity, minimum_finished_stock, is_active, fulfillment_type, unit, product_line, order_mode, minimum_order_quantity, minimum_order_unit, lead_time_hours, accepts_flavor_selection, accepts_size_selection, accepts_theme_customization, accepts_custom_message, accepts_event_date, accepts_serving_count, accepts_variant_notes, requires_manual_quote, order_guidelines, storefront_section_title, storefront_badge_text")
         .eq("is_active", true)
         .order("name"),
       [],

@@ -9,7 +9,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { Cart } from "@/features/storefront/lib/types";
+import type { Cart, ProductCustomization } from "@/features/storefront/lib/types";
 
 type AddItemPayload = {
   productId: string;
@@ -19,6 +19,7 @@ type AddItemPayload = {
   unitPrice: number;
   quantity?: number;
   itemNotes?: string | null;
+  customization?: ProductCustomization | null;
 };
 
 type CartContextValue = {
@@ -29,9 +30,10 @@ type CartContextValue = {
   addItem: (payload: AddItemPayload) => Promise<void>;
   updateItem: (payload: {
     productId: string;
-    quantity: number;
-    itemNotes?: string | null;
-  }) => Promise<void>;
+      quantity: number;
+      itemNotes?: string | null;
+      customization?: ProductCustomization | null;
+    }) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
   clear: () => Promise<void>;
   setNotes: (notes: string) => Promise<void>;
@@ -108,6 +110,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       productId: string;
       quantity: number;
       itemNotes?: string | null;
+      customization?: ProductCustomization | null;
     }) => {
       setError(null);
       try {

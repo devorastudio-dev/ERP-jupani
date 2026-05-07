@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/features/storefront/components/ui/button";
 import { useCart } from "@/features/storefront/components/cart/cart-provider";
+import type { ProductCustomization } from "@/features/storefront/lib/types";
 
 type AddToCartButtonProps = {
   product: {
@@ -14,6 +15,7 @@ type AddToCartButtonProps = {
   };
   quantity?: number;
   itemNotes?: string | null;
+  customization?: ProductCustomization | null;
   disabled?: boolean;
 };
 
@@ -21,6 +23,7 @@ export const AddToCartButton = ({
   product,
   quantity = 1,
   itemNotes,
+  customization,
   disabled = false,
 }: AddToCartButtonProps) => {
   const { addItem } = useCart();
@@ -30,7 +33,7 @@ export const AddToCartButton = ({
   const handleAdd = async () => {
     try {
       setLoading(true);
-      await addItem({ ...product, quantity, itemNotes });
+      await addItem({ ...product, quantity, itemNotes, customization });
       setAdded(true);
       setTimeout(() => setAdded(false), 1600);
     } finally {

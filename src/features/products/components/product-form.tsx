@@ -42,6 +42,22 @@ export function ProductForm({ categories, panShapes, product, onSuccess }: Produ
       pan_shape_code: "",
       serving_reference_quantity: null,
       serving_reference_unit: "",
+      product_line: "geral",
+      order_mode: "sob_encomenda",
+      minimum_order_quantity: null,
+      minimum_order_unit: "",
+      lead_time_hours: null,
+      accepts_flavor_selection: false,
+      accepts_size_selection: false,
+      accepts_theme_customization: false,
+      accepts_custom_message: false,
+      accepts_event_date: false,
+      accepts_serving_count: false,
+      accepts_variant_notes: false,
+      requires_manual_quote: false,
+      order_guidelines: "",
+      storefront_section_title: "",
+      storefront_badge_text: "",
       fulfillment_type: "sob_encomenda",
       is_active: true,
       show_on_storefront: true,
@@ -72,6 +88,22 @@ export function ProductForm({ categories, panShapes, product, onSuccess }: Produ
       public_ingredients_text: product?.public_ingredients_text ?? "",
       notes: product?.notes ?? "",
       photo_path: product?.photo_path ?? "",
+      product_line: product?.product_line ?? "geral",
+      order_mode: product?.order_mode ?? "sob_encomenda",
+      minimum_order_quantity: Number(product?.minimum_order_quantity ?? 0) || null,
+      minimum_order_unit: product?.minimum_order_unit ?? "",
+      lead_time_hours: Number(product?.lead_time_hours ?? 0) || null,
+      accepts_flavor_selection: product?.accepts_flavor_selection ?? false,
+      accepts_size_selection: product?.accepts_size_selection ?? false,
+      accepts_theme_customization: product?.accepts_theme_customization ?? false,
+      accepts_custom_message: product?.accepts_custom_message ?? false,
+      accepts_event_date: product?.accepts_event_date ?? false,
+      accepts_serving_count: product?.accepts_serving_count ?? false,
+      accepts_variant_notes: product?.accepts_variant_notes ?? false,
+      requires_manual_quote: product?.requires_manual_quote ?? false,
+      order_guidelines: product?.order_guidelines ?? "",
+      storefront_section_title: product?.storefront_section_title ?? "",
+      storefront_badge_text: product?.storefront_badge_text ?? "",
       fulfillment_type: product?.fulfillment_type ?? "sob_encomenda",
       is_active: product?.is_active ?? true,
       show_on_storefront: product?.show_on_storefront ?? true,
@@ -273,6 +305,31 @@ export function ProductForm({ categories, panShapes, product, onSuccess }: Produ
         </p>
       </div>
       <div className="space-y-2">
+        <Label htmlFor="product_line">Linha comercial</Label>
+        <select
+          id="product_line"
+          {...register("product_line")}
+          className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
+        >
+          <option value="geral">Geral</option>
+          <option value="bolos_aniversario">Bolos de aniversario</option>
+          <option value="docinhos">Docinhos</option>
+          <option value="merendas">Merendas</option>
+        </select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="order_mode">Modo de pedido</Label>
+        <select
+          id="order_mode"
+          {...register("order_mode")}
+          className="flex h-10 w-full rounded-xl border border-rose-100 bg-white px-3 text-sm"
+        >
+          <option value="sob_encomenda">Sob encomenda</option>
+          <option value="pronta_entrega">Pronta entrega</option>
+          <option value="ambos">Ambos</option>
+        </select>
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="fulfillment_type">Tipo</Label>
         <select
           id="fulfillment_type"
@@ -283,9 +340,37 @@ export function ProductForm({ categories, panShapes, product, onSuccess }: Produ
           <option value="pronta_entrega">Pronta entrega</option>
         </select>
       </div>
+      <div className="space-y-2">
+        <Label htmlFor="lead_time_hours">Antecedencia minima</Label>
+        <Input id="lead_time_hours" type="number" step="1" min="0" placeholder="Horas" {...register("lead_time_hours")} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="minimum_order_quantity">Quantidade minima</Label>
+        <Input
+          id="minimum_order_quantity"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="Ex: 50"
+          {...register("minimum_order_quantity")}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="minimum_order_unit">Unidade minima</Label>
+        <Input id="minimum_order_unit" placeholder="un, cento, kg, caixa" {...register("minimum_order_unit")} />
+      </div>
       <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="description">Descrição</Label>
         <Textarea id="description" {...register("description")} />
+      </div>
+      <div className="space-y-2 xl:col-span-2">
+        <Label htmlFor="order_guidelines">Regras e orientacoes do pedido</Label>
+        <Textarea
+          id="order_guidelines"
+          rows={3}
+          placeholder="Ex: minimo de 50 unidades, pedido com 48h de antecedencia, tema sob consulta."
+          {...register("order_guidelines")}
+        />
       </div>
       <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="notes">Observações</Label>
@@ -312,6 +397,14 @@ export function ProductForm({ categories, panShapes, product, onSuccess }: Produ
         <p className="text-xs text-stone-500">
           Você pode colar uma URL/caminho manual ou enviar uma nova imagem abaixo.
         </p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="storefront_section_title">Seção do site</Label>
+        <Input id="storefront_section_title" placeholder="Ex: Bolos de aniversario" {...register("storefront_section_title")} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="storefront_badge_text">Selo do site</Label>
+        <Input id="storefront_badge_text" placeholder="Ex: Sob encomenda" {...register("storefront_badge_text")} />
       </div>
       <div className="space-y-2 xl:col-span-2">
         <Label htmlFor="uploaded_photo">Upload de foto</Label>
@@ -353,6 +446,41 @@ export function ProductForm({ categories, panShapes, product, onSuccess }: Produ
         <input type="checkbox" value="true" {...register("is_active")} />
         Produto ativo
       </label>
+      <div className="grid gap-3 rounded-3xl border border-rose-100 bg-[#fff8f4] p-4 xl:col-span-2 md:grid-cols-2">
+        <p className="md:col-span-2 text-sm font-medium text-stone-700">Recursos de encomenda</p>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("accepts_flavor_selection")} />
+          Permite escolher sabor
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("accepts_size_selection")} />
+          Permite escolher tamanho
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("accepts_theme_customization")} />
+          Permite personalizacao de tema
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("accepts_custom_message")} />
+          Permite texto personalizado
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("accepts_event_date")} />
+          Solicita data do evento
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("accepts_serving_count")} />
+          Solicita numero de pessoas
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("accepts_variant_notes")} />
+          Permite observacoes por item
+        </label>
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" value="true" {...register("requires_manual_quote")} />
+          Exige confirmacao manual de orcamento
+        </label>
+      </div>
       <div className="grid gap-3 rounded-3xl border border-rose-100 bg-[#fff8f4] p-4 xl:col-span-2 md:grid-cols-3">
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" value="true" {...register("show_on_storefront")} />

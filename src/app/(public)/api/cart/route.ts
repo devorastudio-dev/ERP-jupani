@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
+import type { ProductCustomization } from "@/features/storefront/lib/types";
 import {
   CART_COOKIE,
   CART_MAX_AGE_DAYS,
@@ -26,12 +27,14 @@ const addSchema = z.object({
   unitPrice: z.number().nonnegative(),
   quantity: z.number().int().positive(),
   itemNotes: z.string().optional().nullable(),
+  customization: z.custom<ProductCustomization | null | undefined>().optional().nullable(),
 });
 
 const updateSchema = z.object({
   productId: z.string(),
   quantity: z.number().int().positive(),
   itemNotes: z.string().optional().nullable(),
+  customization: z.custom<ProductCustomization | null | undefined>().optional().nullable(),
 });
 
 const notesSchema = z.object({
@@ -68,6 +71,7 @@ export async function POST(request: Request) {
       ...payload,
       image: payload.image ?? null,
       itemNotes: payload.itemNotes ?? null,
+      customization: payload.customization ?? null,
     });
     await setCookie(serializeCart(updatedCart));
     return NextResponse.json({ ok: true, cart: updatedCart });
@@ -103,6 +107,7 @@ export async function PATCH(request: Request) {
       productId: payload.productId,
       quantity: payload.quantity,
       itemNotes: payload.itemNotes,
+      customization: payload.customization,
     });
     await setCookie(serializeCart(updatedCart));
     return NextResponse.json({ ok: true, cart: updatedCart });

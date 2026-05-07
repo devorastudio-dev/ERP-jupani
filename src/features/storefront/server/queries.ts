@@ -25,6 +25,22 @@ const PRODUCT_SELECT = `
   estimated_kcal_total,
   estimated_kcal_per_serving,
   public_ingredients_text,
+  product_line,
+  order_mode,
+  minimum_order_quantity,
+  minimum_order_unit,
+  lead_time_hours,
+  accepts_flavor_selection,
+  accepts_size_selection,
+  accepts_theme_customization,
+  accepts_custom_message,
+  accepts_event_date,
+  accepts_serving_count,
+  accepts_variant_notes,
+  requires_manual_quote,
+  order_guidelines,
+  storefront_section_title,
+  storefront_badge_text,
   created_at,
   finished_stock_quantity,
   product_category_links(
@@ -54,6 +70,22 @@ type StorefrontProductRow = {
   estimated_kcal_total: number | null;
   estimated_kcal_per_serving: number | null;
   public_ingredients_text: string | null;
+  product_line: string | null;
+  order_mode: string | null;
+  minimum_order_quantity: number | null;
+  minimum_order_unit: string | null;
+  lead_time_hours: number | null;
+  accepts_flavor_selection: boolean;
+  accepts_size_selection: boolean;
+  accepts_theme_customization: boolean;
+  accepts_custom_message: boolean;
+  accepts_event_date: boolean;
+  accepts_serving_count: boolean;
+  accepts_variant_notes: boolean;
+  requires_manual_quote: boolean;
+  order_guidelines: string | null;
+  storefront_section_title: string | null;
+  storefront_badge_text: string | null;
   created_at: string;
   finished_stock_quantity: number | null;
   product_category_links: Array<{
@@ -132,6 +164,22 @@ const mapProduct = (row: StorefrontProductRow): ProductCardData => {
     estimatedKcalTotal: Number(row.estimated_kcal_total ?? 0),
     estimatedKcalPerServing: Number(row.estimated_kcal_per_serving ?? 0),
     displayIngredients,
+    productLine: row.product_line,
+    orderMode: row.order_mode,
+    minimumOrderQuantity: row.minimum_order_quantity,
+    minimumOrderUnit: row.minimum_order_unit,
+    leadTimeHours: row.lead_time_hours,
+    acceptsFlavorSelection: row.accepts_flavor_selection,
+    acceptsSizeSelection: row.accepts_size_selection,
+    acceptsThemeCustomization: row.accepts_theme_customization,
+    acceptsCustomMessage: row.accepts_custom_message,
+    acceptsEventDate: row.accepts_event_date,
+    acceptsServingCount: row.accepts_serving_count,
+    acceptsVariantNotes: row.accepts_variant_notes,
+    requiresManualQuote: row.requires_manual_quote,
+    orderGuidelines: row.order_guidelines,
+    storefrontSectionTitle: row.storefront_section_title,
+    storefrontBadgeText: row.storefront_badge_text,
     isHealthy: row.is_storefront_healthy,
     isLactoseFree: row.is_storefront_lactose_free,
     isGlutenFree: row.is_storefront_gluten_free,

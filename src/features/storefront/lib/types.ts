@@ -1,3 +1,15 @@
+export type ProductCustomization = {
+  flavor?: string | null;
+  size?: string | null;
+  theme?: string | null;
+  customMessage?: string | null;
+  eventDate?: string | null;
+  servingCount?: number | null;
+  variantNotes?: string | null;
+  selectedAddons?: string[] | null;
+  answers?: Record<string, string | number | boolean | null> | null;
+};
+
 export type ProductCardData = {
   id: string;
   name: string;
@@ -17,6 +29,22 @@ export type ProductCardData = {
   estimatedKcalTotal?: number;
   estimatedKcalPerServing?: number;
   displayIngredients?: string | null;
+  productLine?: string | null;
+  orderMode?: string | null;
+  minimumOrderQuantity?: number | null;
+  minimumOrderUnit?: string | null;
+  leadTimeHours?: number | null;
+  acceptsFlavorSelection?: boolean;
+  acceptsSizeSelection?: boolean;
+  acceptsThemeCustomization?: boolean;
+  acceptsCustomMessage?: boolean;
+  acceptsEventDate?: boolean;
+  acceptsServingCount?: boolean;
+  acceptsVariantNotes?: boolean;
+  requiresManualQuote?: boolean;
+  orderGuidelines?: string | null;
+  storefrontSectionTitle?: string | null;
+  storefrontBadgeText?: string | null;
   isHealthy?: boolean;
   isLactoseFree?: boolean;
   isGlutenFree?: boolean;
@@ -37,6 +65,7 @@ export type CartItem = {
   unitPrice: number;
   quantity: number;
   itemNotes?: string | null;
+  customization?: ProductCustomization | null;
 };
 
 export type Cart = {

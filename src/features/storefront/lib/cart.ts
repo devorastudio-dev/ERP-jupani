@@ -2,6 +2,21 @@ import "server-only";
 import { z } from "zod";
 import type { Cart, CartItem } from "@/features/storefront/lib/types";
 
+const customizationSchema = z
+  .object({
+    flavor: z.string().optional().nullable(),
+    size: z.string().optional().nullable(),
+    theme: z.string().optional().nullable(),
+    customMessage: z.string().optional().nullable(),
+    eventDate: z.string().optional().nullable(),
+    servingCount: z.number().optional().nullable(),
+    variantNotes: z.string().optional().nullable(),
+    selectedAddons: z.array(z.string()).optional().nullable(),
+    answers: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).optional().nullable(),
+  })
+  .optional()
+  .nullable();
+
 export const CART_COOKIE = "ju_cart";
 export const CART_MAX_AGE_DAYS = 7;
 
@@ -32,11 +47,13 @@ const cartItemSchema = z
     unitPrice: z.number().nonnegative(),
     quantity: z.number().int().positive(),
     itemNotes: z.string().nullable().optional(),
+    customization: customizationSchema,
   })
   .transform((item) => ({
     ...item,
     image: normalizeCartImage(item.image ?? null),
     unitPrice: normalizeLegacyUnitPrice(item.unitPrice),
+    customization: item.customization ?? null,
   }));
 
 const cartSchema = z.object({
@@ -92,6 +109,7 @@ export const addItemToCart = (cart: Cart, item: CartItem): Cart => {
   if (existing) {
     existing.quantity += item.quantity;
     existing.itemNotes = item.itemNotes ?? existing.itemNotes ?? null;
+    existing.customization = item.customization ?? existing.customization ?? null;
   } else {
     cart.items.push({ ...item });
   }
@@ -105,11 +123,13 @@ export const updateItemInCart = ({
   productId,
   quantity,
   itemNotes,
+  customization,
 }: {
   cart: Cart;
   productId: string;
   quantity: number;
   itemNotes?: string | null;
+  customization?: CartItem["customization"];
 }) => {
   const item = cart.items.find((entry) => entry.productId === productId);
   if (!item) {
@@ -119,6 +139,9 @@ export const updateItemInCart = ({
   item.quantity = quantity;
   if (itemNotes !== undefined) {
     item.itemNotes = itemNotes;
+  }
+  if (customization !== undefined) {
+    item.customization = customization;
   }
 
   cart.updatedAt = new Date().toISOString();

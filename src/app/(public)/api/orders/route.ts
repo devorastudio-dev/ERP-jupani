@@ -198,6 +198,7 @@ export async function POST(request: Request) {
           discount_amount: 0,
           total_price: item.unitPrice * item.quantity,
           notes: item.itemNotes ?? null,
+          configuration_json: item.customization ?? null,
         })),
       }
       )
