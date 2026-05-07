@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ClipboardList, MonitorSmartphone, Store, Wallet } from "lucide-react";
 import { SaleForm } from "@/features/sales/components/sale-form";
 import { SalesList } from "@/features/sales/components/sales-list";
 import { getSalesPageData, type SalesSourceFilter } from "@/features/sales/server/queries";
@@ -112,32 +113,53 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
         }
       />
 
-      <section className="grid gap-6 2xl:grid-cols-[1.05fr_0.75fr]">
-        <SaleForm products={products} openCashSession={openCashSession} />
-        <Card className="min-w-0">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Pedidos visíveis</p>
+            <ClipboardList className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-stone-900">{sales.length}</p>
+        </div>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Pedidos do site</p>
+            <MonitorSmartphone className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-stone-900">{sourceSummary.site}</p>
+        </div>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Pedidos no painel</p>
+            <Store className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-stone-900">{sourceSummary.manual}</p>
+        </div>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Caixa atual</p>
+            <Wallet className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-base font-semibold text-stone-900">
+            {openCashSession ? `Aberto desde ${formatDate(openCashSession.opened_at, "DD/MM/YYYY HH:mm")}` : "Nenhuma sessão aberta"}
+          </p>
+        </div>
+      </section>
+
+      <section className="grid items-start gap-6 2xl:grid-cols-[1.16fr_0.84fr]">
+        <div className="min-w-0">
+          <SaleForm products={products} openCashSession={openCashSession} />
+        </div>
+        <Card className="min-w-0 2xl:sticky 2xl:top-28">
           <CardHeader>
             <CardTitle>Operação comercial</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-2xl bg-rose-50 p-4">
-              <p className="text-sm text-stone-500">Pedidos no painel</p>
-              <p className="mt-2 text-3xl font-semibold text-stone-900">{sales.length}</p>
+            <div className="rounded-2xl bg-rose-50 p-4 text-sm text-stone-600">
+              Use os filtros acima para separar rapidamente o que veio do site e o que foi lançado internamente.
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl bg-[#fff8f4] p-4">
-                <p className="text-sm text-stone-500">Pedidos do site</p>
-                <p className="mt-2 text-2xl font-semibold text-stone-900">{sourceSummary.site}</p>
-              </div>
-              <div className="rounded-2xl bg-[#fff8f4] p-4">
-                <p className="text-sm text-stone-500">Lançados no painel</p>
-                <p className="mt-2 text-2xl font-semibold text-stone-900">{sourceSummary.manual}</p>
-              </div>
-            </div>
-            <div className="rounded-2xl bg-[#fff8f4] p-4">
-              <p className="text-sm text-stone-500">Caixa atual</p>
-              <p className="mt-2 text-lg font-semibold text-stone-900">
-                {openCashSession ? `Aberto desde ${formatDate(openCashSession.opened_at, "DD/MM/YYYY HH:mm")}` : "Nenhuma sessão aberta"}
-              </p>
+            <div className="rounded-2xl bg-[#fff8f4] p-4 text-sm text-stone-600">
+              Monte o pedido na coluna principal e deixe este card como apoio para conferência do fluxo comercial.
             </div>
             <div className="rounded-2xl border border-dashed border-rose-200 p-4 text-sm text-stone-500">
               Pagamentos lançados pelo pedido também entram no módulo de caixa como movimentação de entrada com categoria de venda.

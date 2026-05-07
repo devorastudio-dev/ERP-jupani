@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AppBreadcrumb } from "@/components/layout/app-breadcrumb";
 import { AppMobileNav } from "@/components/layout/app-mobile-nav";
+import { AppQuickNav } from "@/components/layout/app-quick-nav";
 import { ADMIN_BASE_PATH } from "@/lib/route-config";
 
 export function AppHeader({ profile }: { profile: AuthUserProfile }) {
@@ -22,8 +23,8 @@ export function AppHeader({ profile }: { profile: AuthUserProfile }) {
               </div>
             </div>
             <AppBreadcrumb />
-            <h2 className="mt-2 text-xl font-semibold text-stone-900 md:text-2xl">Visão operacional da confeitaria</h2>
-            <p className="mt-1 hidden text-sm text-stone-500 md:block">Pedidos, produção, estoque e financeiro no mesmo fluxo.</p>
+            <h2 className="mt-2 text-xl font-semibold text-stone-900 md:text-2xl">Painel operacional</h2>
+            <p className="mt-1 hidden text-sm text-stone-500 md:block">Acesse os módulos principais sem atravessar um menu longo.</p>
           </div>
           <div className="hidden items-center gap-3 md:flex">
             <div className="relative w-72">
@@ -44,6 +45,7 @@ export function AppHeader({ profile }: { profile: AuthUserProfile }) {
             </Link>
           </div>
         </div>
+        <AppQuickNav />
         <div className="md:hidden">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-stone-400" />

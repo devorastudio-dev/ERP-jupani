@@ -1,3 +1,4 @@
+import { AlertTriangle, BadgeDollarSign, CalendarClock, ClipboardPenLine } from "lucide-react";
 import { InventoryMovementsTable } from "@/features/inventory/components/inventory-movements-table";
 import { InventoryAdjustmentForm } from "@/features/inventory/components/inventory-adjustment-form";
 import { InventoryBatchCountForm } from "@/features/inventory/components/inventory-batch-count-form";
@@ -58,29 +59,42 @@ export default async function InventoryPage() {
         }
       />
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-rose-100 bg-white p-5">
-          <p className="text-sm text-stone-500">Valor estimado em estoque</p>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Valor estimado em estoque</p>
+            <BadgeDollarSign className="h-5 w-5 text-rose-400" />
+          </div>
           <p className="mt-2 text-3xl font-semibold text-stone-900">{formatCurrency(totalInventoryValue)}</p>
         </div>
-        <div className="rounded-3xl border border-rose-100 bg-white p-5">
-          <p className="text-sm text-stone-500">Itens abaixo do mínimo</p>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Itens abaixo do mínimo</p>
+            <AlertTriangle className="h-5 w-5 text-rose-400" />
+          </div>
           <p className="mt-2 text-3xl font-semibold text-stone-900">{lowStockCount}</p>
         </div>
-        <div className="rounded-3xl border border-rose-100 bg-white p-5">
-          <p className="text-sm text-stone-500">Validades críticas</p>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Validades críticas</p>
+            <CalendarClock className="h-5 w-5 text-rose-400" />
+          </div>
           <p className="mt-2 text-3xl font-semibold text-stone-900">{expiringSoonCount}</p>
         </div>
       </section>
-      <section className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+
+      <section className="grid items-start gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <div className="space-y-6">
           <InventoryAdjustmentForm ingredients={ingredients} />
           <InventoryBatchCountForm ingredients={ingredients} />
-          <Card>
+          <Card className="xl:sticky xl:top-28">
             <CardHeader>
               <CardTitle>Resumo do estoque</CardTitle>
+              <p className="text-sm text-stone-500">
+                Apoio rápido para conferência de itens críticos enquanto voce registra ajustes e contagens.
+              </p>
             </CardHeader>
             <CardContent className="space-y-3">
-              {ingredients.map((ingredient) => (
+              {ingredients.slice(0, 10).map((ingredient) => (
                 <div key={ingredient.id} className="flex items-center justify-between rounded-2xl bg-rose-50/60 p-4">
                   <div>
                     <p className="font-medium text-stone-800">{ingredient.name}</p>
@@ -96,17 +110,39 @@ export default async function InventoryPage() {
                   </Badge>
                 </div>
               ))}
+              {ingredients.length > 10 ? (
+                <div className="rounded-2xl border border-dashed border-rose-200 p-4 text-sm text-stone-500">
+                  Exibindo 10 itens para leitura rápida. O histórico ao lado continua disponível para auditoria completa.
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </div>
-        <Card>
+
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="flex items-start gap-4 p-5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                <ClipboardPenLine className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-stone-900">Movimentações em foco</p>
+                <p className="mt-1 text-sm text-stone-500">
+                  Ajustes e contagens ficam separados do histórico para evitar sensação de tela carregada durante a operação.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
           <CardHeader>
             <CardTitle>Histórico de movimentações</CardTitle>
           </CardHeader>
           <CardContent>
             <InventoryMovementsTable movements={movements} />
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </section>
     </div>
   );

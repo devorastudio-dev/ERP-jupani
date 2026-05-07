@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Croissant, Layers3, PackageCheck, Percent } from "lucide-react";
 import { getProductsPageData } from "@/features/products/server/queries";
 import { ProductCategoriesCard } from "@/features/products/components/product-categories-card";
 import { ProductForm } from "@/features/products/components/product-form";
@@ -91,24 +92,34 @@ export default async function ProductsPage({
         }
       />
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-rose-100 bg-white p-5">
-          <p className="text-sm text-stone-500">Produtos ativos</p>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Produtos ativos</p>
+            <Croissant className="h-5 w-5 text-rose-400" />
+          </div>
           <p className="mt-2 text-3xl font-semibold text-stone-900">{activeProducts}</p>
         </div>
-        <div className="rounded-3xl border border-rose-100 bg-white p-5">
-          <p className="text-sm text-stone-500">Pronta-entrega em atenção</p>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Pronta-entrega em atenção</p>
+            <PackageCheck className="h-5 w-5 text-rose-400" />
+          </div>
           <p className="mt-2 text-3xl font-semibold text-stone-900">{lowFinishedGoods}</p>
         </div>
-        <div className="rounded-3xl border border-rose-100 bg-white p-5">
-          <p className="text-sm text-stone-500">Margem média estimada</p>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Margem média estimada</p>
+            <Percent className="h-5 w-5 text-rose-400" />
+          </div>
           <p className="mt-2 text-3xl font-semibold text-stone-900">{averageMargin.toFixed(1)}%</p>
           <p className="mt-1 text-sm text-stone-500">
             Baseada em venda e custo estimado do catálogo.
           </p>
         </div>
       </section>
-      <section className="grid gap-6 2xl:grid-cols-[0.92fr_1.08fr]">
-        <div className="space-y-6">
+
+      <section className="grid items-start gap-6 2xl:grid-cols-[1.06fr_0.94fr]">
+        <div className="min-w-0 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Novo produto</CardTitle>
@@ -122,7 +133,22 @@ export default async function ProductsPage({
           <ProductCategoriesCard categories={categories} />
         </div>
 
-        <Card className="min-w-0">
+        <div className="min-w-0 space-y-6 2xl:sticky 2xl:top-28">
+          <Card className="min-w-0">
+            <CardContent className="flex items-start gap-4 p-5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                <Layers3 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-stone-900">Catálogo mais legível</p>
+                <p className="mt-1 text-sm text-stone-500">
+                  Formulário e ajustes ficam na coluna principal; a consulta e os filtros ficam concentrados aqui para reduzir ruído visual.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Catálogo</CardTitle>
             <p className="text-sm text-stone-500">
@@ -158,7 +184,8 @@ export default async function ProductsPage({
           <CardContent>
             <ProductsTable products={filteredProducts} categories={categories} panShapes={panShapes} />
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </section>
     </div>
   );

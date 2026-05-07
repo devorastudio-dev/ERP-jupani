@@ -1,9 +1,10 @@
+import { ClipboardList, PackagePlus, Truck, Wallet } from "lucide-react";
 import { PurchaseForm } from "@/features/purchases/components/purchase-form";
 import { PurchasesList } from "@/features/purchases/components/purchases-list";
 import { getPurchasesPageData } from "@/features/purchases/server/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatPhone } from "@/lib/utils";
+import { formatCurrency, formatPhone } from "@/lib/utils";
 import { getCurrentProfile } from "@/server/auth/session";
 import { requireModule } from "@/server/auth/guards";
 
@@ -13,6 +14,11 @@ export default async function PurchasesPage() {
   requireModule(profile, "compras");
 
   const { purchases, suppliers, ingredients, payables, suggestedPurchases } = await getPurchasesPageData();
+  const pendingPayables = payables.filter((payable) => payable.status !== "pago");
+  const pendingPayablesAmount = pendingPayables.reduce(
+    (sum, payable) => sum + Math.max(Number(payable.amount ?? 0) - Number(payable.paid_amount ?? 0), 0),
+    0,
+  );
 
   return (
     <div className="space-y-6">
@@ -21,11 +27,47 @@ export default async function PurchasesPage() {
         description="Registre compras com itens, gere contas a pagar e aprove o recebimento para refletir no estoque."
       />
 
-      <section className="grid gap-6 2xl:grid-cols-[1.02fr_0.78fr]">
-        <PurchaseForm suppliers={suppliers} ingredients={ingredients} />
-        <Card className="min-w-0">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Compras registradas</p>
+            <ClipboardList className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-stone-900">{purchases.length}</p>
+        </div>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Reposições sugeridas</p>
+            <PackagePlus className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-stone-900">{suggestedPurchases.length}</p>
+        </div>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Fornecedores ativos</p>
+            <Truck className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-stone-900">{suppliers.length}</p>
+        </div>
+        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm shadow-rose-100/40">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-500">Contas pendentes</p>
+            <Wallet className="h-5 w-5 text-rose-400" />
+          </div>
+          <p className="mt-3 text-2xl font-semibold text-stone-900">{formatCurrency(pendingPayablesAmount)}</p>
+        </div>
+      </section>
+
+      <section className="grid items-start gap-6 2xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="min-w-0">
+          <PurchaseForm suppliers={suppliers} ingredients={ingredients} />
+        </div>
+        <Card className="min-w-0 2xl:sticky 2xl:top-28">
           <CardHeader>
             <CardTitle>Reposição sugerida</CardTitle>
+            <p className="text-sm text-stone-500">
+              Apoio rápido para decidir o que comprar sem tirar o foco do lançamento principal.
+            </p>
           </CardHeader>
           <CardContent className="space-y-3">
             {suggestedPurchases.length ? (
@@ -59,6 +101,11 @@ export default async function PurchasesPage() {
                 Nenhuma sugestão de reposição no momento.
               </div>
             )}
+            <div className="rounded-2xl border border-dashed border-rose-200 p-4 text-sm text-stone-500">
+              {pendingPayables.length
+                ? `${pendingPayables.length} conta(s) a pagar ainda exigem acompanhamento financeiro.`
+                : "Nenhuma conta pendente no momento."}
+            </div>
           </CardContent>
         </Card>
       </section>

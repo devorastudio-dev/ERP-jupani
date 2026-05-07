@@ -381,15 +381,6 @@ export async function updateSaleAction(id: string, formData: FormData) {
     return { success: false, error: insertItemsError.message };
   }
 
-  if (currentSale.status !== parsed.data.status) {
-    await supabase.from("order_status_history").insert({
-      sale_id: id,
-      old_status: currentSale.status,
-      new_status: parsed.data.status,
-      notes: "Status ajustado na edição do pedido",
-    });
-  }
-
   await syncReceivableForSale({
     saleId: id,
     customerName: parsed.data.customer_name,

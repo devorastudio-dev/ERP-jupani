@@ -204,6 +204,7 @@ export function RecipeForm({
       toast.success(recipe?.id ? "Ficha técnica atualizada com sucesso." : "Ficha técnica salva com sucesso.");
       if (!recipe?.id) {
         reset({
+          product_id: "",
           packaging_cost: 0,
           additional_cost: 0,
           notes: "",
@@ -222,7 +223,7 @@ export function RecipeForm({
         <CardTitle>{recipe?.id ? "Editar ficha técnica" : "Nova ficha técnica"}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="space-y-5">
+        <form onSubmit={onSubmit} className="space-y-6">
           <div className="grid gap-4 xl:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="product_id">Produto</Label>
@@ -250,18 +251,15 @@ export function RecipeForm({
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-stone-900">Insumos da receita</h3>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => append({ ingredient_id: "", unit: "g", quantity: 1 })}
-              >
-                <Plus className="h-4 w-4" />
-                Adicionar item
-              </Button>
+          <div className="space-y-4 rounded-[1.75rem] border border-rose-100/80 bg-[#fffaf8] p-4 md:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-stone-900">Insumos da receita</h3>
+                <p className="mt-1 text-sm text-stone-500">Preencha a lista em sequência e use `+` no final para incluir novos insumos.</p>
+              </div>
+              <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-rose-600 shadow-sm shadow-rose-100/50">
+                {fields.length} item(ns)
+              </div>
             </div>
             <div className="space-y-3">
               {fields.map((field, index) => {
@@ -280,7 +278,7 @@ export function RecipeForm({
                 const currentCost = Number(selectedIngredient?.average_cost ?? 0) * safeQuantity;
 
                 return (
-                  <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.58fr)_minmax(120px,0.58fr)_auto]">
+                  <div key={field.id} className="grid gap-3 rounded-3xl border border-rose-100 bg-white p-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.58fr)_minmax(120px,0.58fr)_auto]">
                     <div className="space-y-2">
                       <Label>Insumo</Label>
                       <select
@@ -341,26 +339,32 @@ export function RecipeForm({
                 );
               })}
             </div>
-            {errors.items ? <p className="text-sm text-red-600">{errors.items.message as string}</p> : null}
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-semibold text-stone-900">Insumos de embalagem</h3>
-                <p className="text-xs text-stone-500">
-                  Use esta seção para descontar caixas, potes, fitas e outros itens do estoque.
-                </p>
-              </div>
+            <div className="flex justify-center pt-1">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendPackaging({ ingredient_id: "", unit: "un", quantity: 1 })}
+                className="rounded-full border-dashed border-rose-200 bg-white px-4"
+                onClick={() => append({ ingredient_id: "", unit: "g", quantity: 1 })}
               >
                 <Plus className="h-4 w-4" />
-                Adicionar embalagem
+                <span className="sr-only">Novo insumo</span>
               </Button>
+            </div>
+            {errors.items ? <p className="text-sm text-red-600">{errors.items.message as string}</p> : null}
+          </div>
+
+          <div className="space-y-4 rounded-[1.75rem] border border-emerald-100 bg-emerald-50/35 p-4 md:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-stone-900">Insumos de embalagem</h3>
+                <p className="mt-1 text-sm text-stone-500">
+                  Use esta seção para descontar caixas, potes, fitas e outros itens do estoque.
+                </p>
+              </div>
+              <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm shadow-emerald-100/60">
+                {packagingFields.length} item(ns)
+              </div>
             </div>
             <div className="flex flex-col gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 text-sm text-stone-600">
               <label className="flex items-center gap-2">
@@ -467,6 +471,18 @@ export function RecipeForm({
                 </div>
               )}
             </div>
+            <div className="flex justify-center pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full border-dashed border-emerald-200 bg-white px-4"
+                onClick={() => appendPackaging({ ingredient_id: "", unit: "un", quantity: 1 })}
+              >
+                <Plus className="h-4 w-4" />
+                <span className="sr-only">Nova embalagem</span>
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -474,28 +490,32 @@ export function RecipeForm({
             <Textarea id="notes" {...register("notes")} />
           </div>
 
-          <div className="rounded-2xl bg-rose-50 p-4">
-            <p className="text-sm text-stone-500">Custo calculado em tela</p>
-            <p className="mt-2 text-2xl font-semibold text-stone-900">{formatCurrency(totalCost)}</p>
-            <p className="mt-1 text-xs text-stone-500">
-              O banco recalcula o custo teórico oficial após salvar insumos da receita e de embalagem.
-            </p>
-          </div>
-          <div className="rounded-2xl bg-[#fff8f4] p-4">
-            <p className="text-sm text-stone-500">Nutrição estimada em tela</p>
-            <p className="mt-2 text-2xl font-semibold text-stone-900">
-              {nutritionPreview.estimatedKcalTotal.toFixed(0)} kcal totais
-            </p>
-            <p className="mt-1 text-xs text-stone-500">
-              {nutritionPreview.estimatedServings > 0
-                ? `${nutritionPreview.estimatedServings.toFixed(1)} pessoas · ${nutritionPreview.estimatedKcalPerServing.toFixed(0)} kcal por porção`
-                : "Defina rendimento e consumo por pessoa no produto para calcular as porções."}
-            </p>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-2xl bg-rose-50 p-4">
+              <p className="text-sm text-stone-500">Custo calculado em tela</p>
+              <p className="mt-2 text-2xl font-semibold text-stone-900">{formatCurrency(totalCost)}</p>
+              <p className="mt-1 text-xs text-stone-500">
+                O banco recalcula o custo teórico oficial após salvar insumos da receita e de embalagem.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-[#fff8f4] p-4">
+              <p className="text-sm text-stone-500">Nutrição estimada em tela</p>
+              <p className="mt-2 text-2xl font-semibold text-stone-900">
+                {nutritionPreview.estimatedKcalTotal.toFixed(0)} kcal totais
+              </p>
+              <p className="mt-1 text-xs text-stone-500">
+                {nutritionPreview.estimatedServings > 0
+                  ? `${nutritionPreview.estimatedServings.toFixed(1)} pessoas · ${nutritionPreview.estimatedKcalPerServing.toFixed(0)} kcal por porção`
+                  : "Defina rendimento e consumo por pessoa no produto para calcular as porções."}
+              </p>
+            </div>
           </div>
 
-          <Button type="submit" disabled={pending}>
-            {pending ? "Salvando..." : recipe?.id ? "Atualizar ficha técnica" : "Salvar ficha técnica"}
-          </Button>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={pending} className="min-w-52 rounded-2xl">
+              {pending ? "Salvando..." : recipe?.id ? "Atualizar ficha técnica" : "Salvar ficha técnica"}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

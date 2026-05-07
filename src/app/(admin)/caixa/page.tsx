@@ -1,3 +1,4 @@
+import { ArrowDownCircle, ArrowUpCircle, Landmark, ReceiptText } from "lucide-react";
 import { AccountsOverview } from "@/features/cash/components/accounts-overview";
 import { CashOperations } from "@/features/cash/components/cash-operations";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
@@ -83,7 +84,10 @@ export default async function CashPage() {
       <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         <Card className="min-w-0">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Entradas</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Entradas</CardTitle>
+              <ArrowUpCircle className="h-5 w-5 text-emerald-500" />
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold text-emerald-700">{formatCurrency(summary.totalEntries)}</p>
@@ -92,7 +96,10 @@ export default async function CashPage() {
         </Card>
         <Card className="min-w-0">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Saídas</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Saídas</CardTitle>
+              <ArrowDownCircle className="h-5 w-5 text-rose-500" />
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold text-rose-700">{formatCurrency(summary.totalExits)}</p>
@@ -101,7 +108,10 @@ export default async function CashPage() {
         </Card>
         <Card className="min-w-0">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Saldo operacional</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Saldo operacional</CardTitle>
+              <Landmark className="h-5 w-5 text-stone-500" />
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold text-stone-900">{formatCurrency(summary.operationalBalance)}</p>
@@ -110,7 +120,10 @@ export default async function CashPage() {
         </Card>
         <Card className="min-w-0">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">{openSession ? "Saldo atual do caixa" : "Base do período"}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">{openSession ? "Saldo atual do caixa" : "Base do período"}</CardTitle>
+              <ReceiptText className="h-5 w-5 text-stone-500" />
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold text-stone-900">{formatCurrency(summary.currentBalance)}</p>
@@ -121,14 +134,17 @@ export default async function CashPage() {
         </Card>
       </section>
       <CashOperations openSession={openSession} />
-      <section className="grid gap-6 2xl:grid-cols-[0.8fr_1.2fr]">
-        <Card className="min-w-0">
+      <section className="grid items-start gap-6 2xl:grid-cols-[0.86fr_1.14fr]">
+        <Card className="min-w-0 2xl:sticky 2xl:top-28">
           <CardHeader>
             <CardTitle>Sessões de caixa</CardTitle>
+            <p className="text-sm text-stone-500">
+              Visão rápida do histórico de abertura e fechamento para conferência operacional.
+            </p>
           </CardHeader>
           <CardContent className="space-y-3">
             {sessions.length ? (
-              sessions.map((session) => (
+              sessions.slice(0, 8).map((session) => (
                 <div key={session.id} className="rounded-2xl border border-rose-100 p-4">
                   <div className="flex items-center justify-between">
                     <p className="font-medium text-stone-800">{formatDate(session.opened_at, "DD/MM/YYYY HH:mm")}</p>
@@ -146,13 +162,19 @@ export default async function CashPage() {
             )}
           </CardContent>
         </Card>
-        <Card className="min-w-0">
+        <div className="space-y-6">
+          <Card className="min-w-0">
+            <CardContent className="p-5 text-sm text-stone-500">
+              Movimentações recentes ficam em destaque para você bater o olho no fluxo do dia sem competir com os controles do caixa logo acima.
+            </CardContent>
+          </Card>
+          <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Movimentações recentes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {movements.length ? (
-              movements.map((movement) => (
+              movements.slice(0, 12).map((movement) => (
                 <div key={movement.id} className="flex items-center justify-between rounded-2xl bg-rose-50/60 p-4">
                   <div>
                     <p className="font-medium text-stone-800">{movement.description}</p>
@@ -172,7 +194,8 @@ export default async function CashPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </section>
       <AccountsOverview payables={payables} receivables={receivables} />
     </div>
